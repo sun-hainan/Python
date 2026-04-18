@@ -14,17 +14,13 @@ Bubble Sort - 冒泡排序
 - 教学演示排序思想
 - 数据基本有序的小规模排序
 - 嵌入式设备（代码简单，内存占用小）
+- 考试成绩初步排序
 
 【何时使用】
 - 数据量 n < 1000
 - 数据基本有序
 - 需要稳定排序
 - 嵌入式/硬件受限环境
-
-【实际案例】
-# 考试成绩初排序（数据量小，基本有序）
-scores = [85, 92, 78, 96, 88, 73, 91]
-bubble_sort(scores)  # 快速得到基本排名
 """
 
 def bubble_sort(arr):
@@ -38,10 +34,8 @@ def bubble_sort(arr):
         排序后的列表
     """
     n = len(arr)
-    
     for i in range(n - 1, 0, -1):
         for j in range(i):
             if arr[j] > arr[j + 1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
-    
     return arr
