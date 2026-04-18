@@ -7,6 +7,42 @@ Binary Tree - 二叉树遍历
 2. 中序 Inorder:   左 -> 根 -> 右
 3. 后序 Postorder: 左 -> 右 -> 根
 4. 层序 Level:     按层遍历
+
+【应用场景】
+- 文件系统目录结构
+- DOM树遍历
+- 表达式求值
+- 组织架构树
+
+【何时使用】
+- 层次结构数据
+- 表达式计算
+- 搜索/遍历
+
+【实际案例】
+# 表达式树求值
+# (3 + 4) * 2 对应的表达式树
+#     *
+#    / \
+#   +    2
+#  / \
+# 3   4
+# 前序: * + 3 4 2 (前缀表达式)
+# 中序: 3 + 4 * 2 (中缀表达式)
+# 后序: 3 4 + 2 * (后缀表达式)
+
+# HTML DOM树遍历
+dom_tree = {
+    "html": ["head", "body"],
+    "head": ["title"],
+    "title": [],
+    "body": ["div", "script"],
+    "div": ["p", "a"],
+    "p": [],
+    "a": [],
+    "script": []
+}
+preorder(dom_tree, "html")  # 前序遍历HTML结构
 """
 
 from collections import deque
