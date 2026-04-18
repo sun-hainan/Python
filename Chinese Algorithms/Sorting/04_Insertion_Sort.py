@@ -8,7 +8,25 @@ Insertion Sort - 插入排序
 【时间复杂度】O(n^2)
 【空间复杂度】O(1)
 【稳定性】稳定
-【特点】适合基本有序的数据、小规模数据
+
+【应用场景】
+- 手牌整理（扑克/麻将）
+- 基本有序的数据增量排序
+- 小规模数据排序
+- 实时数据流排序
+
+【何时使用】
+- 数据基本有序
+- 数据量 n < 50
+- 需要持续插入新数据的场景
+- 实时系统（响应快、无大幅移动）
+
+【实际案例】
+# 图书馆还书后整理书架
+# 每还一本书，找到合适位置插入即可
+books = ["红楼梦", "水浒传", "西游记", "三国演义"]  # 已按作者年代排序
+new_book = "聊斋志异"  # 还回来后插入到合适位置
+insertion_sort(books)  # 聊斋在水浒和三国的位置之间
 """
 
 def insertion_sort(arr):
@@ -24,8 +42,11 @@ def insertion_sort(arr):
     for i in range(1, len(arr)):
         key = arr[i]
         j = i - 1
+        
         while j >= 0 and arr[j] > key:
             arr[j + 1] = arr[j]
             j -= 1
+        
         arr[j + 1] = key
+    
     return arr
