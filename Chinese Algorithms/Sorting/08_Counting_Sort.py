@@ -3,62 +3,38 @@ Counting Sort - 计数排序
 ==========================================
 
 【算法原理】
-非比较排序：
-1. 统计每个元素出现次数
-2. 计算元素位置前缀和
-3. 根据位置放置元素
+非比较排序：统计次数 -> 计算前缀和 -> 放置元素。
 
 【时间复杂度】O(n + k)
 【空间复杂度】O(n + k)
 【稳定性】稳定
 
 【应用场景】
-- 年龄排序（范围固定：0-150）
-- 学号排序（范围固定）
-- 成绩排序（0-100分）
+- 学生考试成绩排序（0-100分）
+- 高考成绩排序（0-750分）
 - 员工工号排序
+- 年龄排序（0-150岁）
 
 【何时使用】
-- 数据范围 k 不大（如 0-100, 0-10000）
+- 数据范围k不大
 - 整数排序
 - 需要稳定排序
-- 数据量远大于数据范围
-
-【实际案例】
-# 学生成绩排序（0-100分）
-scores = [85, 92, 78, 96, 88, 73, 91, 85, 90, 88]
-counting_sort(scores)  # 非常高效
-
-# 高考成绩排序（0-750分）
-national_scores = [620, 580, 720, 650, 580, 700]
-counting_sort(national_scores)  # 计数排序完美适用
 """
 
 def counting_sort(arr):
     """
     计数排序
-    
-    Args:
-        arr: 待排序整数列表
-        
-    Returns:
-        排序后的新列表
     """
     if not arr:
         return []
-    
     min_val, max_val = min(arr), max(arr)
     count = [0] * (max_val - min_val + 1)
-    
     for num in arr:
         count[num - min_val] += 1
-    
     for i in range(1, len(count)):
         count[i] += count[i - 1]
-    
     result = [0] * len(arr)
     for num in reversed(arr):
         result[count[num - min_val] - 1] = num
         count[num - min_val] -= 1
-    
     return result
