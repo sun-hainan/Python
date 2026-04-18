@@ -15,6 +15,28 @@ Prim - 最小生成树
 - 城市光钎网络铺设
 - 电路板布线
 - 道路网络规划
+- 电网建设
+
+【何时使用】
+- 需要连接所有节点成本最低
+- 网络/交通规划
+- 聚类分析
+
+【实际案例】
+# 村庄光钎网络建设
+# 6个村庄，如何铺设光钎总长度最短？
+villages = [
+    [0, 6, 1, 5, 0, 0],  # 村庄0到各村的距离
+    [6, 0, 5, 0, 3, 0],
+    [1, 5, 0, 5, 6, 4],
+    [5, 0, 5, 0, 2, 0],
+    [0, 3, 6, 2, 0, 6],
+    [0, 0, 4, 0, 6, 0]
+]
+prim(villages)  # 输出最小铺设长度
+
+# 分布式数据库连接
+# 如何用最少的光钎连接所有数据中心
 """
 
 def prim(graph):
@@ -34,7 +56,6 @@ def prim(graph):
     result = 0
     
     for _ in range(n):
-        # 选择未访问的最小距离顶点
         u = -1
         for v in range(n):
             if not visited[v]:
@@ -47,26 +68,8 @@ def prim(graph):
         visited[u] = True
         result += min_dist[u]
         
-        # 更新邻居顶点的距离
         for v in range(n):
             if graph[u][v] > 0 and not visited[v]:
                 min_dist[v] = min(min_dist[v], graph[u][v])
     
     return result
-
-
-# ---------- Kruskal ----------
-FILES['Chinese Algorithms/Graphs/05_Kruskal.py'] = 
-Kruskal - 最小生成树
-==========================================
-
-【算法原理】
-贪心 + 并查集：
-1. 将所有边按权重排序
-2. 依次选择最小边(不成环)
-3. 直到选中V-1条边
-
-【时间复杂度】O(E log E)
-【空间复杂度】O(V)
-
-【应用场景】与Prim相同
