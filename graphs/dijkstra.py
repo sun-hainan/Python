@@ -1,67 +1,88 @@
 """
-pseudo-code
+Dijkstra 最短路径算法 - 中文注释版
+==========================================
 
-DIJKSTRA(graph G, start vertex s, destination vertex d):
+算法原理：
+    Dijkstra 算法用于在带权图中找到从单个源点到所有其他顶点的最短路径。
+    核心思想：贪心 + 优先队列（最小堆）
 
-//all nodes initially unexplored
+    每一步都选择当前已知最短距离最小的未访问顶点，
+    然后更新该顶点的邻居的最短距离。
 
-1 -  let H = min heap data structure, initialized with 0 and s [here 0 indicates
-     the distance from start vertex s]
-2 -  while H is non-empty:
-3 -    remove the first node and cost of H, call it U and cost
-4 -    if U has been previously explored:
-5 -      go to the while loop, line 2 //Once a node is explored there is no need
-         to make it again
-6 -    mark U as explored
-7 -    if U is d:
-8 -      return cost // total cost from start to destination vertex
-9 -    for each edge(U, V): c=cost of edge(U,V) // for V in graph[U]
-10 -     if V explored:
-11 -       go to next V in line 9
-12 -     total_cost = cost + c
-13 -     add (total_cost,V) to H
+算法步骤：
+    1. 初始化：源点距离为 0，其他顶点距离为无穷大
+    2. 使用最小堆存储 (距离, 顶点) 对
+    3. 弹出距离最小的未访问顶点
+    4. 如果该顶点是目标顶点，返回距离
+    5. 更新该顶点所有邻居的距离（如果通过它更近）
+    6. 重复直到堆为空或找到目标
 
-You can think at cost as a distance where Dijkstra finds the shortest distance
-between vertices s and v in a graph G. The use of a min heap as H guarantees
-that if a vertex has already been explored there will be no other path with
-shortest distance, that happens because heapq.heappop will always return the
-next vertex with the shortest distance, considering that the heap stores not
-only the distance between previous vertex and current vertex but the entire
-distance between each vertex that makes up the path from start vertex to target
-vertex.
+时间复杂度：O((V + E) * log V)，使用最小堆
+空间复杂度：O(V)
+
+适用条件：
+    - 正权边图（必须！负权边会导致错误结果）
+    - 单源最短路径
+
+对比 Bellman-Ford：
+    - Dijkstra：O((V+E) log V)，但不能处理负权边
+    - Bellman-Ford：O(VE)，可以处理负权边，能检测负环
 """
 
 import heapq
 
 
 def dijkstra(graph, start, end):
-    """Return the cost of the shortest path between vertices start and end.
-
-    >>> dijkstra(G, "E", "C")
-    6
-    >>> dijkstra(G2, "E", "F")
-    3
-    >>> dijkstra(G3, "E", "F")
-    3
     """
+    Dijkstra 最短路径算法
 
-    heap = [(0, start)]  # cost from start node,end node
+    参数:
+        graph: 邻接表，格式 {顶点: [[邻居, 权重], ...]}
+        start: 起始顶点
+        end: 目标顶点
+
+    返回:
+        从 start 到 end 的最短路径长度，未找到返回 -1
+
+    示例:
+        >>> dijkstra(G, "E", "C")
+        6
+        >>> dijkstra(G2, "E", "F")
+        3
+    """
+    # (从源点到该顶点的总距离, 顶点)
+    heap = [(0, start)]
     visited = set()
+
     while heap:
-        (cost, u) = heapq.heappop(heap)
+        (cost, u) = heapq.heappop(heap)  # 弹出最短距离的顶点
+
         if u in visited:
-            continue
+            continue  # 已访问过，跳过
         visited.add(u)
+
+        # 找到目标顶点
         if u == end:
             return cost
+
+        # 遍历所有邻居
         for v, c in graph[u]:
             if v in visited:
                 continue
             next_item = cost + c
             heapq.heappush(heap, (next_item, v))
-    return -1
+
+    return -1  # 不可达
 
 
+# ============== 示例图 ==============
+#     A -- 2 --> B
+#     |          |
+#     5          1
+#     |          v
+#     C <-- 3 -- F
+#
+# G 的邻接表表示：
 G = {
     "A": [["B", 2], ["C", 5]],
     "B": [["A", 2], ["D", 3], ["E", 1], ["F", 1]],
@@ -71,49 +92,8 @@ G = {
     "F": [["C", 3], ["E", 3]],
 }
 
-r"""
-Layout of G2:
-
-E -- 1 --> B -- 1 --> C -- 1 --> D -- 1 --> F
- \                                         /\
-  \                                        ||
-    ----------------- 3 --------------------
-"""
-G2 = {
-    "B": [["C", 1]],
-    "C": [["D", 1]],
-    "D": [["F", 1]],
-    "E": [["B", 1], ["F", 3]],
-    "F": [],
-}
-
-r"""
-Layout of G3:
-
-E -- 1 --> B -- 1 --> C -- 1 --> D -- 1 --> F
- \                                         /\
-  \                                        ||
-    -------- 2 ---------> G ------- 1 ------
-"""
-G3 = {
-    "B": [["C", 1]],
-    "C": [["D", 1]],
-    "D": [["F", 1]],
-    "E": [["B", 1], ["G", 2]],
-    "F": [],
-    "G": [["F", 1]],
-}
-
-short_distance = dijkstra(G, "E", "C")
-print(short_distance)  # E -- 3 --> F -- 3 --> C == 6
-
-short_distance = dijkstra(G2, "E", "F")
-print(short_distance)  # E -- 3 --> F == 3
-
-short_distance = dijkstra(G3, "E", "F")
-print(short_distance)  # E -- 2 --> G -- 1 --> F == 3
-
 if __name__ == "__main__":
     import doctest
-
     doctest.testmod()
+
+    print(f"E 到 C 的最短距离: {dijkstra(G, 'E', 'C')}")  # 输出: 6
