@@ -1,11 +1,38 @@
 """
-Implementation of gradient descent algorithm for minimizing cost of a linear hypothesis
-function.
+梯度下降法 (Gradient Descent) - 中文注释版
+==========================================
+
+算法原理：
+    梯度下降是机器学习中最核心的优化算法。
+    用于最小化损失函数（cost function），找到最优参数。
+
+核心思想：
+    想象你站在山坡上，想走到山谷最低点：
+    1. 查看当前位置最陡的下山方向
+    2. 朝那个方向走一小步
+    3. 重复直到到达最低点
+
+数学表达：
+    θ = θ - α * ∇J(θ)
+
+    其中：
+    - θ（theta）：模型参数
+    - α（alpha）：学习率（步长）
+    - ∇J(θ)：损失函数的梯度（导数）
+
+学习率的影响：
+    - 学习率太大：可能跳过最优点，甚至发散
+    - 学习率太小：收敛太慢
+
+三种形式：
+    1. 批量梯度下降（BGD）：每次用全部数据计算梯度
+    2. 随机梯度下降（SGD）：每次用一个样本
+    3. 小批量梯度下降（MBGD）：每次用一小批样本
 """
 
 import numpy as np
 
-# List of input, output pairs
+# 训练数据：输入(x1, x2, x3) -> 输出y
 train_data = (
     ((5, 2, 3), 15),
     ((6, 5, 9), 25),
@@ -14,44 +41,42 @@ train_data = (
     ((11, 12, 13), 41),
 )
 test_data = (((515, 22, 13), 555), ((61, 35, 49), 150))
+
+# 初始参数向量 [偏置, w1, w2, w3]
 parameter_vector = [2, 4, 1, 5]
 m = len(train_data)
 LEARNING_RATE = 0.009
 
 
-def _error(example_no, data_set="train"):
-    """
-    :param data_set: train data or test data
-    :param example_no: example number whose error has to be checked
-    :return: error in example pointed by example number.
-    """
-    return calculate_hypothesis_value(example_no, data_set) - output(
-        example_no, data_set
-    )
-
-
 def _hypothesis_value(data_input_tuple):
     """
-    Calculates hypothesis function value for a given input
-    :param data_input_tuple: Input tuple of a particular example
-    :return: Value of hypothesis function at that point.
-    Note that there is an 'biased input' whose value is fixed as 1.
-    It is not explicitly mentioned in input data.. But, ML hypothesis functions use it.
-    So, we have to take care of it separately. Line 36 takes care of it.
+    假设函数（预测值）
+    h(x) = θ0 + θ1*x1 + θ2*x2 + θ3*x3
+
+    参数:
+        data_input_tuple: 输入特征元组 (x1, x2, x3)
+
+    返回:
+        预测的输出值
     """
     hyp_val = 0
     for i in range(len(parameter_vector) - 1):
         hyp_val += data_input_tuple[i] * parameter_vector[i + 1]
-    hyp_val += parameter_vector[0]
+    hyp_val += parameter_vector[0]  # 加上偏置项
     return hyp_val
 
 
+def _error(example_no, data_set="train"):
+    """
+    计算单个样本的误差
+
+    误差 = 预测值 - 真实值
+    """
+    return calculate_hypothesis_value(example_no, data_set) - output(example_no, data_set)
+
+
 def output(example_no, data_set):
-    """
-    :param data_set: test data or train data
-    :param example_no: example whose output is to be fetched
-    :return: output for that example
-    """
+    """获取真实输出值"""
     if data_set == "train":
         return train_data[example_no][1]
     elif data_set == "test":
@@ -60,12 +85,7 @@ def output(example_no, data_set):
 
 
 def calculate_hypothesis_value(example_no, data_set):
-    """
-    Calculates hypothesis value for a given example
-    :param data_set: test data or train_data
-    :param example_no: example whose hypothesis value is to be calculated
-    :return: hypothesis value for that example
-    """
+    """计算假设函数值"""
     if data_set == "train":
         return _hypothesis_value(train_data[example_no][0])
     elif data_set == "test":
@@ -75,65 +95,69 @@ def calculate_hypothesis_value(example_no, data_set):
 
 def summation_of_cost_derivative(index, end=m):
     """
-    Calculates the sum of cost function derivative
-    :param index: index wrt derivative is being calculated
-    :param end: value where summation ends, default is m, number of examples
-    :return: Returns the summation of cost derivative
-    Note: If index is -1, this means we are calculating summation wrt to biased
-        parameter.
+    计算损失函数偏导数的累加和
+
+    对于参数 θi：
+    Σ(预测误差 * x_i) / m
     """
     summation_value = 0
     for i in range(end):
         if index == -1:
+            # 偏置项的梯度
             summation_value += _error(i)
         else:
+            # 其他参数的梯度
             summation_value += _error(i) * train_data[i][0][index]
     return summation_value
 
 
 def get_cost_derivative(index):
     """
-    :param index: index of the parameter vector wrt to derivative is to be calculated
-    :return: derivative wrt to that index
-    Note: If index is -1, this means we are calculating summation wrt to biased
-        parameter.
+    获取代价函数相对于参数 index 的偏导数
+
+    导数 = 累加和 / 样本数
     """
-    cost_derivative_value = summation_of_cost_derivative(index, m) / m
-    return cost_derivative_value
+    return summation_of_cost_derivative(index, m) / m
 
 
 def run_gradient_descent():
+    """
+    运行梯度下降算法
+
+    迭代更新参数，直到收敛：
+    θ_new = θ_old - α * 梯度
+    """
     global parameter_vector
-    # Tune these values to set a tolerance value for predicted output
+
     absolute_error_limit = 0.000002
-    relative_error_limit = 0
-    j = 0
+
+    iteration = 0
     while True:
-        j += 1
+        iteration += 1
         temp_parameter_vector = [0, 0, 0, 0]
+
+        # 更新所有参数
         for i in range(len(parameter_vector)):
             cost_derivative = get_cost_derivative(i - 1)
-            temp_parameter_vector[i] = (
-                parameter_vector[i] - LEARNING_RATE * cost_derivative
-            )
-        if np.allclose(
-            parameter_vector,
-            temp_parameter_vector,
-            atol=absolute_error_limit,
-            rtol=relative_error_limit,
-        ):
+            temp_parameter_vector[i] = parameter_vector[i] - LEARNING_RATE * cost_derivative
+
+        # 检查是否收敛（参数变化小于阈值）
+        if np.allclose(parameter_vector, temp_parameter_vector, atol=absolute_error_limit):
             break
+
         parameter_vector = temp_parameter_vector
-    print(("Number of iterations:", j))
+
+    print(f"迭代次数: {iteration}")
 
 
 def test_gradient_descent():
+    """测试梯度下降结果"""
     for i in range(len(test_data)):
-        print(("Actual output value:", output(i, "test")))
-        print(("Hypothesis output:", calculate_hypothesis_value(i, "test")))
+        print(f"真实输出: {output(i, 'test')}")
+        print(f"预测输出: {calculate_hypothesis_value(i, 'test')}")
 
 
 if __name__ == "__main__":
     run_gradient_descent()
-    print("\nTesting gradient descent for a linear hypothesis function.\n")
+    print("\n测试结果:")
     test_gradient_descent()
