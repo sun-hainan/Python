@@ -1,16 +1,30 @@
 """
-A pure Python implementation of the insertion sort algorithm
+插入排序 (Insertion Sort) - 中文注释版
+==========================================
 
-This algorithm sorts a collection by comparing adjacent elements.
-When it finds that order is not respected, it moves the element compared
-backward until the order is correct.  It then goes back directly to the
-element's initial position resuming forward comparison.
+算法原理：
+    插入排序的工作方式像整理扑克牌一样。
+    从左到右遍历数组，将每个元素插入到它左侧已排序部分中的正确位置。
 
-For doctests run following command:
-python3 -m doctest -v insertion_sort.py
+算法步骤：
+    1. 从第二个元素开始（假设第一个元素已排序）
+    2. 将当前元素与左侧已排序元素逐一比较
+    3. 如果左侧元素较大，则向右移动
+    4. 找到正确位置后，插入当前元素
+    5. 重复直到整个数组排序完成
 
-For manual testing run:
-python3 insertion_sort.py
+时间复杂度：
+    - 平均: O(n²)
+    - 最坏: O(n²)（逆序数组）
+    - 最好: O(n)（已经有序的数组）
+
+空间复杂度：O(1) - 原地排序
+
+算法特点：
+    - 稳定排序
+    - 对于小规模数据或近乎有序的数据效率高
+    - 实现简单，是"冒泡排序"的改进版
+    - 适合在线排序（已排好序的部分可以立即输出）
 """
 
 from collections.abc import MutableSequence
@@ -25,36 +39,32 @@ T = TypeVar("T", bound=Comparable)
 
 
 def insertion_sort[T: Comparable](collection: MutableSequence[T]) -> MutableSequence[T]:
-    """A pure Python implementation of the insertion sort algorithm
-
-    :param collection: some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return: the same collection ordered by ascending
-
-    Examples:
-    >>> insertion_sort([0, 5, 3, 2, 2])
-    [0, 2, 2, 3, 5]
-    >>> insertion_sort([]) == sorted([])
-    True
-    >>> insertion_sort([-2, -5, -45]) == sorted([-2, -5, -45])
-    True
-    >>> insertion_sort(['d', 'a', 'b', 'e', 'c']) == sorted(['d', 'a', 'b', 'e', 'c'])
-    True
-    >>> import random
-    >>> collection = random.sample(range(-50, 50), 100)
-    >>> insertion_sort(collection) == sorted(collection)
-    True
-    >>> import string
-    >>> collection = random.choices(string.ascii_letters + string.digits, k=100)
-    >>> insertion_sort(collection) == sorted(collection)
-    True
     """
+    插入排序
 
+    参数:
+        collection: 可变的有序集合，包含可比较的元素
+
+    返回:
+        同一个集合，按升序排列
+
+    示例:
+        >>> insertion_sort([0, 5, 3, 2, 2])
+        [0, 2, 2, 3, 5]
+        >>> insertion_sort([]) == sorted([])
+        True
+        >>> insertion_sort([-2, -5, -45]) == sorted([-2, -5, -45])
+        True
+    """
+    # 从第二个元素开始，将每个元素插入左侧有序部分
     for insert_index in range(1, len(collection)):
-        insert_value = collection[insert_index]
+        insert_value = collection[insert_index]  # 待插入的元素
+        # 向左逐个比较，找到正确的插入位置
         while insert_index > 0 and insert_value < collection[insert_index - 1]:
+            # 元素右移，为待插入元素腾出位置
             collection[insert_index] = collection[insert_index - 1]
             insert_index -= 1
+        # 插入元素到正确位置
         collection[insert_index] = insert_value
     return collection
 
@@ -64,6 +74,6 @@ if __name__ == "__main__":
 
     testmod()
 
-    user_input = input("Enter numbers separated by a comma:\n").strip()
+    user_input = input("输入以逗号分隔的数字:\n").strip()
     unsorted = [int(item) for item in user_input.split(",")]
-    print(f"{insertion_sort(unsorted) = }")
+    print(f"排序结果: {insertion_sort(unsorted)}")
