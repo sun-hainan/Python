@@ -1,12 +1,41 @@
-# floyd_warshall.py
 """
-The problem is to find the shortest distance between all pairs of vertices in a
-weighted directed graph that can have negative edge weights.
+Floyd-Warshall 全源最短路径算法 - 中文注释版
+==========================================
+
+算法原理：
+    Floyd-Warshall 算法计算图中所有顶点对之间的最短路径。
+    它是一个动态规划算法，通过逐步引入中间顶点来更新最短路径。
+
+核心思想：
+    定义 dist[i][j] = 从顶点 i 到顶点 j 的最短路径长度
+
+    初始状态：dist[i][j] = 边 (i,j) 的权重（如果没有边则为 INF）
+
+    状态转移：
+        对于每个中间顶点 k：
+            对于每对顶点 (i, j)：
+                如果 dist[i][k] + dist[k][j] < dist[i][j]
+                则更新 dist[i][j]
+
+    解释：经过顶点 k 的路径可能比直接路径更短
+
+对比 Dijkstra：
+    - Dijkstra：单源最短路径，O((V+E) log V)
+    - Floyd-Warshall：全源最短路径，O(V³)
+    - 当需要多次查询任意两点间距离时，Floyd-Warshall 更优
+
+特点：
+    - 可以处理负权边（但不能有负环）
+    - 代码简单，三重循环
+    - 适合密集图
 """
 
+from typing import List
 
-def _print_dist(dist, v):
-    print("\nThe shortest path matrix using Floyd Warshall algorithm\n")
+
+def _print_dist(dist: List[List[float]], v: int):
+    """打印距离矩阵"""
+    print("\n最短路径矩阵（Floyd-Warshall 算法）:\n")
     for i in range(v):
         for j in range(v):
             if dist[i][j] != float("inf"):
@@ -16,35 +45,36 @@ def _print_dist(dist, v):
         print()
 
 
-def floyd_warshall(graph, v):
+def floyd_warshall(graph: List[List[float]], v: int) -> tuple:
     """
-    :param graph: 2D array calculated from weight[edge[i, j]]
-    :type graph: List[List[float]]
-    :param v: number of vertices
-    :type v: int
-    :return: shortest distance between all vertex pairs
-    distance[u][v] will contain the shortest distance from vertex u to v.
+    Floyd-Warshall 全源最短路径算法
 
-    1. For all edges from v to n, distance[i][j] = weight(edge(i, j)).
-    3. The algorithm then performs distance[i][j] = min(distance[i][j], distance[i][k] +
-        distance[k][j]) for each possible pair i, j of vertices.
-    4. The above is repeated for each vertex k in the graph.
-    5. Whenever distance[i][j] is given a new minimum value, next vertex[i][j] is
-        updated to the next vertex[i][k].
+    参数:
+        graph: 邻接矩阵，graph[i][j] = 边 (i,j) 的权重，无边为 INF
+        v: 顶点数
+
+    返回:
+        (最短距离矩阵, 顶点数)
+
+    示例:
+        # 3 个顶点，2 条边：1->2 (权重2), 2->1 (权重1)
+        >>> graph = [[0, INF, INF], [INF, 0, 2], [1, INF, 0]]
+        >>> floyd_warshall(graph, 3)
+        # 输出每对顶点间的最短距离
     """
-
+    # 初始化距离矩阵
     dist = [[float("inf") for _ in range(v)] for _ in range(v)]
 
+    # 从邻接矩阵初始化
     for i in range(v):
         for j in range(v):
             dist[i][j] = graph[i][j]
 
-            # check vertex k against all other vertices (i, j)
+    # 动态规划：逐步引入中间顶点 k
     for k in range(v):
-        # looping through rows of graph array
         for i in range(v):
-            # looping through columns of graph array
             for j in range(v):
+                # 如果经过 k 的路径更短，则更新
                 if (
                     dist[i][k] != float("inf")
                     and dist[k][j] != float("inf")
@@ -57,46 +87,18 @@ def floyd_warshall(graph, v):
 
 
 if __name__ == "__main__":
-    v = int(input("Enter number of vertices: "))
-    e = int(input("Enter number of edges: "))
+    v = int(input("输入顶点数: "))
+    e = int(input("输入边数: "))
 
-    graph = [[float("inf") for i in range(v)] for j in range(v)]
-
+    graph = [[float("inf") for _ in range(v)] for _ in range(v)]
     for i in range(v):
         graph[i][i] = 0.0
 
-        # src and dst are indices that must be within the array size graph[e][v]
-        # failure to follow this will result in an error
     for i in range(e):
-        print("\nEdge ", i + 1)
-        src = int(input("Enter source:"))
-        dst = int(input("Enter destination:"))
-        weight = float(input("Enter weight:"))
+        print(f"\n边 {i + 1}")
+        src = int(input("起点: "))
+        dst = int(input("终点: "))
+        weight = float(input("权重: "))
         graph[src][dst] = weight
 
     floyd_warshall(graph, v)
-
-    # Example Input
-    # Enter number of vertices: 3
-    # Enter number of edges: 2
-
-    # # generated graph from vertex and edge inputs
-    # [[inf, inf, inf], [inf, inf, inf], [inf, inf, inf]]
-    # [[0.0, inf, inf], [inf, 0.0, inf], [inf, inf, 0.0]]
-
-    # specify source, destination and weight for edge #1
-    # Edge  1
-    # Enter source:1
-    # Enter destination:2
-    # Enter weight:2
-
-    # specify source, destination and weight for edge #2
-    # Edge  2
-    # Enter source:2
-    # Enter destination:1
-    # Enter weight:1
-
-    # # Expected Output from the vertice, edge and src, dst, weight inputs!!
-    # 0		INF	INF
-    # INF	0	2
-    # INF	1	0
