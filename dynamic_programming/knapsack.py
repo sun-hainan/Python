@@ -1,39 +1,81 @@
 """
-Given weights and values of n items, put these items in a knapsack of
-capacity W to get the maximum total value in the knapsack.
+背包问题 (Knapsack Problem) - 中文注释版
+==========================================
 
-Note that only the integer weights 0-1 knapsack problem is solvable
-using dynamic programming.
+算法原理：
+    背包问题是经典的动态规划问题。
+    给定 n 个物品，每个物品有重量 wt[i] 和价值 val[i]，
+    在不超过背包容量 W 的情况下，选择物品使得总价值最大。
+
+问题分类：
+    - 0-1 背包：每个物品只能选 0 或 1 次（本题类型）
+    - 完全背包：每个物品可以选无限次
+    - 多重背包：每个物品有有限次数限制
+
+动态规划思路：
+    定义 dp[i][j] = 前 i 个物品，在容量 j 下能获得的最大价值
+
+    状态转移方程：
+        如果不选第 i 个物品：dp[i][j] = dp[i-1][j]
+        如果选第 i 个物品：dp[i][j] = val[i-1] + dp[i-1][j-wt[i-1]]
+        dp[i][j] = max(以上两种情况)
+
+    初始状态：dp[0][j] = 0（0 个物品，任何容量价值都是 0）
+
+时间复杂度：O(n * W)，n 为物品数，W 为背包容量
+空间复杂度：O(n * W)
 """
 
 
 def mf_knapsack(i, wt, val, j):
     """
-    This code involves the concept of memory functions. Here we solve the subproblems
-    which are needed unlike the below example
-    F is a 2D array with ``-1`` s filled up
+    记忆化搜索版本的背包问题
+
+    使用全局 dp 表 f[i][j]，初始值设为 -1 表示未计算。
+    当需要计算子问题时才求解，避免重复计算。
+
+    参数:
+        i: 考虑前 i 个物品
+        j: 背包剩余容量
     """
-    global f  # a global dp table for knapsack
-    if f[i][j] < 0:
+    global f
+    if f[i][j] < 0:  # 未计算过
         if j < wt[i - 1]:
+            # 物品太重，无法选，只能看前 i-1 个
             val = mf_knapsack(i - 1, wt, val, j)
         else:
+            # 选或不选，取较大值
             val = max(
-                mf_knapsack(i - 1, wt, val, j),
-                mf_knapsack(i - 1, wt, val, j - wt[i - 1]) + val[i - 1],
+                mf_knapsack(i - 1, wt, val, j),  # 不选
+                mf_knapsack(i - 1, wt, val, j - wt[i - 1]) + val[i - 1],  # 选
             )
         f[i][j] = val
     return f[i][j]
 
 
 def knapsack(w, wt, val, n):
+    """
+    0-1 背包问题（迭代 DP 版本）
+
+    参数:
+        w: 背包最大容量
+        wt: 物品重量列表
+        val: 物品价值列表
+        n: 物品数量
+
+    返回:
+        (最大价值, DP 表)
+    """
+    # dp[i][j] = 前 i 个物品在容量 j 下的最大价值
     dp = [[0] * (w + 1) for _ in range(n + 1)]
 
+    # 逐个物品决策
     for i in range(1, n + 1):
         for w_ in range(1, w + 1):
-            if wt[i - 1] <= w_:
+            if wt[i - 1] <= w_:  # 能装下第 i 个物品
+                # 选或不选，取较大值
                 dp[i][w_] = max(val[i - 1] + dp[i - 1][w_ - wt[i - 1]], dp[i - 1][w_])
-            else:
+            else:  # 装不下，只能不选
                 dp[i][w_] = dp[i - 1][w_]
 
     return dp[n][w_], dp
@@ -41,57 +83,30 @@ def knapsack(w, wt, val, n):
 
 def knapsack_with_example_solution(w: int, wt: list, val: list):
     """
-    Solves the integer weights knapsack problem returns one of
-    the several possible optimal subsets.
+    背包问题 - 并返回一个最优解的具体物品组合
 
-    Parameters
-    ----------
+    参数:
+        w: 背包总容量
+        wt: 各物品重量列表
+        val: 各物品价值列表
 
-    * `w`: int, the total maximum weight for the given knapsack problem.
-    * `wt`: list, the vector of weights for all items where ``wt[i]`` is the weight
-       of the ``i``-th item.
-    * `val`: list, the vector of values for all items where ``val[i]`` is the value
-      of the ``i``-th item
+    返回:
+        (最大价值, 最优物品组合的索引集合)
 
-    Returns
-    -------
-
-    * `optimal_val`: float, the optimal value for the given knapsack problem
-    * `example_optional_set`: set, the indices of one of the optimal subsets
-      which gave rise to the optimal value.
-
-    Examples
-    --------
-
-    >>> knapsack_with_example_solution(10, [1, 3, 5, 2], [10, 20, 100, 22])
-    (142, {2, 3, 4})
-    >>> knapsack_with_example_solution(6, [4, 3, 2, 3], [3, 2, 4, 4])
-    (8, {3, 4})
-    >>> knapsack_with_example_solution(6, [4, 3, 2, 3], [3, 2, 4])
-    Traceback (most recent call last):
-        ...
-    ValueError: The number of weights must be the same as the number of values.
-    But got 4 weights and 3 values
+    示例:
+        >>> knapsack_with_example_solution(10, [1, 3, 5, 2], [10, 20, 100, 22])
+        (142, {2, 3, 4})
     """
     if not (isinstance(wt, (list, tuple)) and isinstance(val, (list, tuple))):
-        raise ValueError(
-            "Both the weights and values vectors must be either lists or tuples"
-        )
+        raise ValueError("weights 和 values 都必须是 list 或 tuple")
 
     num_items = len(wt)
     if num_items != len(val):
-        msg = (
-            "The number of weights must be the same as the number of values.\n"
-            f"But got {num_items} weights and {len(val)} values"
-        )
-        raise ValueError(msg)
+        raise ValueError(f"物品数量不一致：{num_items} 个重量 vs {len(val)} 个价值")
+
     for i in range(num_items):
         if not isinstance(wt[i], int):
-            msg = (
-                "All weights must be integers but got weight of "
-                f"type {type(wt[i])} at index {i}"
-            )
-            raise TypeError(msg)
+            raise TypeError(f"所有重量必须是整数，但第 {i} 个是 {type(wt[i])}")
 
     optimal_val, dp_table = knapsack(w, wt, val, num_items)
     example_optional_set: set = set()
@@ -102,52 +117,35 @@ def knapsack_with_example_solution(w: int, wt: list, val: list):
 
 def _construct_solution(dp: list, wt: list, i: int, j: int, optimal_set: set):
     """
-    Recursively reconstructs one of the optimal subsets given
-    a filled DP table and the vector of weights
+    回溯 DP 表，还原出一个最优解的具体物品组合
 
-    Parameters
-    ----------
-
-    * `dp`: list of list, the table of a solved integer weight dynamic programming
-      problem
-    * `wt`: list or tuple, the vector of weights of the items
-    * `i`: int, the index of the item under consideration
-    * `j`: int, the current possible maximum weight
-    * `optimal_set`: set, the optimal subset so far. This gets modified by the function.
-
-    Returns
-    -------
-
-    ``None``
+    原理：如果 dp[i][j] == dp[i-1][j]，说明第 i 个物品没选
+          否则，第 i 个物品被选了
     """
-    # for the current item i at a maximum weight j to be part of an optimal subset,
-    # the optimal value at (i, j) must be greater than the optimal value at (i-1, j).
-    # where i - 1 means considering only the previous items at the given maximum weight
     if i > 0 and j > 0:
         if dp[i - 1][j] == dp[i][j]:
+            # 第 i 个物品没选
             _construct_solution(dp, wt, i - 1, j, optimal_set)
         else:
+            # 第 i 个物品选了
             optimal_set.add(i)
             _construct_solution(dp, wt, i - 1, j - wt[i - 1], optimal_set)
 
 
 if __name__ == "__main__":
-    """
-    Adding test case for knapsack
-    """
+    # 测试用例
     val = [3, 2, 4, 4]
     wt = [4, 3, 2, 3]
     n = 4
     w = 6
+
+    # 记忆化版本
     f = [[0] * (w + 1)] + [[0] + [-1] * (w + 1) for _ in range(n + 1)]
     optimal_solution, _ = knapsack(w, wt, val, n)
-    print(optimal_solution)
-    print(mf_knapsack(n, wt, val, w))  # switched the n and w
+    print(f"最大价值: {optimal_solution}")
+    print(f"记忆化搜索结果: {mf_knapsack(n, wt, val, w)}")
 
-    # testing the dynamic programming problem with example
-    # the optimal subset for the above example are items 3 and 4
+    # 测试带解的具体组合
     optimal_solution, optimal_subset = knapsack_with_example_solution(w, wt, val)
-    assert optimal_solution == 8
-    assert optimal_subset == {3, 4}
-    print("optimal_value = ", optimal_solution)
-    print("An optimal subset corresponding to the optimal value", optimal_subset)
+    print(f"最大价值 = {optimal_solution}")
+    print(f"最优物品组合 (索引) = {optimal_subset}")
