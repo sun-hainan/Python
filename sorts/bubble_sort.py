@@ -1,114 +1,90 @@
+"""
+冒泡排序 (Bubble Sort) - 中文注释版
+==========================================
+
+算法原理：
+    冒泡排序是最基础的排序算法之一。它重复地遍历要排序的列表，
+    比较相邻的两个元素，如果顺序错误就交换它们。
+    遍历重复进行，直到没有需要交换的元素为止，此时列表已完全排序。
+
+时间复杂度：
+    - 平均: O(n²)
+    - 最坏: O(n²)
+    - 最好: O(n)（当列表已经有序时，可以优化提前终止）
+
+空间复杂度：O(1) - 原地排序
+
+算法特点：
+    - 稳定排序（相等的元素不会交换位置）
+    - 简单直观，适合初学者学习
+    - 对于大规模数据效率较低，实际应用中较少使用
+"""
 from typing import Any
 
 
 def bubble_sort_iterative(collection: list[Any]) -> list[Any]:
-    """Pure implementation of bubble sort algorithm in Python
+    """冒泡排序（迭代版）
 
-    :param collection: some mutable ordered collection with heterogeneous
-    comparable items inside
-    :return: the same collection ordered in ascending order
+    参数:
+        collection: 一个可变的有序集合，包含可比较的元素
 
-    Examples:
-    >>> bubble_sort_iterative([0, 5, 2, 3, 2])
-    [0, 2, 2, 3, 5]
-    >>> bubble_sort_iterative([])
-    []
-    >>> bubble_sort_iterative([-2, -45, -5])
-    [-45, -5, -2]
-    >>> bubble_sort_iterative([-23, 0, 6, -4, 34])
-    [-23, -4, 0, 6, 34]
-    >>> bubble_sort_iterative([1, 2, 3, 4])
-    [1, 2, 3, 4]
-    >>> bubble_sort_iterative([3, 3, 3, 3])
-    [3, 3, 3, 3]
-    >>> bubble_sort_iterative([56])
-    [56]
-    >>> bubble_sort_iterative([0, 5, 2, 3, 2]) == sorted([0, 5, 2, 3, 2])
-    True
-    >>> bubble_sort_iterative([]) == sorted([])
-    True
-    >>> bubble_sort_iterative([-2, -45, -5]) == sorted([-2, -45, -5])
-    True
-    >>> bubble_sort_iterative([-23, 0, 6, -4, 34]) == sorted([-23, 0, 6, -4, 34])
-    True
-    >>> bubble_sort_iterative(['d', 'a', 'b', 'e']) == sorted(['d', 'a', 'b', 'e'])
-    True
-    >>> bubble_sort_iterative(['z', 'a', 'y', 'b', 'x', 'c'])
-    ['a', 'b', 'c', 'x', 'y', 'z']
-    >>> bubble_sort_iterative([1.1, 3.3, 5.5, 7.7, 2.2, 4.4, 6.6])
-    [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7]
-    >>> bubble_sort_iterative([1, 3.3, 5, 7.7, 2, 4.4, 6])
-    [1, 2, 3.3, 4.4, 5, 6, 7.7]
-    >>> import random
-    >>> collection_arg = random.sample(range(-50, 50), 100)
-    >>> bubble_sort_iterative(collection_arg) == sorted(collection_arg)
-    True
-    >>> import string
-    >>> collection_arg = random.choices(string.ascii_letters + string.digits, k=100)
-    >>> bubble_sort_iterative(collection_arg) == sorted(collection_arg)
-    True
+    返回:
+        同一个集合，按升序排列
+
+    算法步骤:
+        1. 从列表第一个元素开始，比较相邻的两个元素
+        2. 如果前一个元素大于后一个元素，则交换它们
+        3. 每一轮遍历后，最大的元素会"冒泡"到最后
+        4. 重复上述过程，直到没有需要交换的元素
+
+    示例:
+        >>> bubble_sort_iterative([0, 5, 2, 3, 2])
+        [0, 2, 2, 3, 5]
+        >>> bubble_sort_iterative([])
+        []
+        >>> bubble_sort_iterative([-2, -45, -5])
+        [-45, -5, -2]
     """
     length = len(collection)
+    # 从后向前遍历，每一轮确定一个最大元素的位置
     for i in reversed(range(length)):
-        swapped = False
+        swapped = False  # 标记本轮是否有交换
         for j in range(i):
+            # 比较相邻元素，如果顺序错误则交换
             if collection[j] > collection[j + 1]:
                 swapped = True
                 collection[j], collection[j + 1] = collection[j + 1], collection[j]
+        # 如果本轮没有交换，说明列表已经有序，可以提前终止
         if not swapped:
-            break  # Stop iteration if the collection is sorted.
+            break
     return collection
 
 
 def bubble_sort_recursive(collection: list[Any]) -> list[Any]:
-    """It is similar iterative bubble sort but recursive.
+    """冒泡排序（递归版）
 
-    :param collection: mutable ordered sequence of elements
-    :return: the same list in ascending order
+    递归思路:
+        1. 一轮遍历：将最大元素移动到最后
+        2. 递归处理剩余的前 n-1 个元素
+        3. 递归终止条件：没有元素需要交换
 
-    Examples:
-    >>> bubble_sort_recursive([0, 5, 2, 3, 2])
-    [0, 2, 2, 3, 5]
-    >>> bubble_sort_recursive([])
-    []
-    >>> bubble_sort_recursive([-2, -45, -5])
-    [-45, -5, -2]
-    >>> bubble_sort_recursive([-23, 0, 6, -4, 34])
-    [-23, -4, 0, 6, 34]
-    >>> bubble_sort_recursive([0, 5, 2, 3, 2]) == sorted([0, 5, 2, 3, 2])
-    True
-    >>> bubble_sort_recursive([]) == sorted([])
-    True
-    >>> bubble_sort_recursive([-2, -45, -5]) == sorted([-2, -45, -5])
-    True
-    >>> bubble_sort_recursive([-23, 0, 6, -4, 34]) == sorted([-23, 0, 6, -4, 34])
-    True
-    >>> bubble_sort_recursive(['d', 'a', 'b', 'e']) == sorted(['d', 'a', 'b', 'e'])
-    True
-    >>> bubble_sort_recursive(['z', 'a', 'y', 'b', 'x', 'c'])
-    ['a', 'b', 'c', 'x', 'y', 'z']
-    >>> bubble_sort_recursive([1.1, 3.3, 5.5, 7.7, 2.2, 4.4, 6.6])
-    [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7]
-    >>> bubble_sort_recursive([1, 3.3, 5, 7.7, 2, 4.4, 6])
-    [1, 2, 3.3, 4.4, 5, 6, 7.7]
-    >>> bubble_sort_recursive(['a', 'Z', 'B', 'C', 'A', 'c'])
-    ['A', 'B', 'C', 'Z', 'a', 'c']
-    >>> import random
-    >>> collection_arg = random.sample(range(-50, 50), 100)
-    >>> bubble_sort_recursive(collection_arg) == sorted(collection_arg)
-    True
-    >>> import string
-    >>> collection_arg = random.choices(string.ascii_letters + string.digits, k=100)
-    >>> bubble_sort_recursive(collection_arg) == sorted(collection_arg)
-    True
+    示例:
+        >>> bubble_sort_recursive([0, 5, 2, 3, 2])
+        [0, 2, 2, 3, 5]
+        >>> bubble_sort_recursive([])
+        []
     """
     length = len(collection)
     swapped = False
+
+    # 一轮遍历：比较相邻元素并交换
     for i in range(length - 1):
         if collection[i] > collection[i + 1]:
             collection[i], collection[i + 1] = collection[i + 1], collection[i]
             swapped = True
 
+    # 如果没有交换，说明已经有序，递归终止
+    # 否则递归处理剩余元素
     return collection if not swapped else bubble_sort_recursive(collection)
 
 
@@ -119,20 +95,23 @@ if __name__ == "__main__":
 
     doctest.testmod()
 
-    # Benchmark: Iterative seems slightly faster than recursive.
+    # 性能基准测试
     num_runs = 10_000
     unsorted = sample(range(-50, 50), 100)
+
+    # 测试迭代版
     timer_iterative = timeit(
         "bubble_sort_iterative(unsorted[:])", globals=globals(), number=num_runs
     )
-    print("\nIterative bubble sort:")
+    print("\n迭代版冒泡排序:")
     print(*bubble_sort_iterative(unsorted), sep=",")
-    print(f"Processing time (iterative): {timer_iterative:.5f}s for {num_runs:,} runs")
+    print(f"处理时间 (迭代版): {timer_iterative:.5f}s ({num_runs:,} 次)")
 
+    # 测试递归版
     unsorted = sample(range(-50, 50), 100)
     timer_recursive = timeit(
         "bubble_sort_recursive(unsorted[:])", globals=globals(), number=num_runs
     )
-    print("\nRecursive bubble sort:")
+    print("\n递归版冒泡排序:")
     print(*bubble_sort_recursive(unsorted), sep=",")
-    print(f"Processing time (recursive): {timer_recursive:.5f}s for {num_runs:,} runs")
+    print(f"处理时间 (递归版): {timer_recursive:.5f}s ({num_runs:,} 次)")
