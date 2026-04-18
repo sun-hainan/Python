@@ -7,11 +7,6 @@ Binary Tree - 二叉树遍历
 2. 中序 Inorder:   左 -> 根 -> 右
 3. 后序 Postorder: 左 -> 右 -> 根
 4. 层序 Level:     按层遍历
-
-【应用场景】
-- 表达式树遍历
-- 文件系统遍历
-- DOM树遍历
 """
 
 from collections import deque
@@ -59,23 +54,3 @@ def level_order(root):
         if node.right:
             queue.append(node.right)
     return result
-
-
-# ---------- Linked List ----------
-FILES['Chinese Algorithms/Structure/02_Linked_List.py'] = 
-Linked List - 链表
-==========================================
-
-【数据结构】
-每个节点包含数据和指向下一个节点的指针。
-最后一个节点的next指向None。
-
-【特点】
-- 插入/删除: O(1)（已知位置）
-- 查找: O(n)
-- 不需要连续内存空间
-
-【应用场景】
-- 火车车厢连接
-- 历史记录/Undo功能
-- 任务队列管理
