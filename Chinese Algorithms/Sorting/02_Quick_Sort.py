@@ -12,6 +12,27 @@ Quick Sort - 快速排序
 【时间复杂度】O(n log n) 平均, O(n^2) 最坏
 【空间复杂度】O(log n)
 【稳定性】不稳定
+
+【应用场景】
+- 通用排序需求（Python、Java默认排序）
+- 大规模数据排序
+- 需要高效排序的系统
+- 数据库索引排序
+
+【何时使用】
+- 通用场景首选
+- 数据量较大 n > 100
+- 对排序稳定性无要求
+- 需要较高性能
+
+【实际案例】
+# 电商商品按价格排序
+products = [
+    {"name": "手机", "price": 5999},
+    {"name": "平板", "price": 2999},
+    {"name": "电脑", "price": 8999}
+]
+sorted_products = quick_sort(products)  # 按价格排序展示
 """
 
 def quick_sort(arr):
