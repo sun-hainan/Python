@@ -3,17 +3,42 @@ Floyd-Warshall - 全源最短路径
 ==========================================
 
 【算法原理】
-动态规划：
-逐步引入中间顶点，更新所有顶点对之间的距离。
-dist[i][j][k] = 经过顶点k时i到j的最短距离
+动态规划，逐步引入中间顶点，更新所有顶点对之间的距离。
 
 【时间复杂度】O(V^3)
 【空间复杂度】O(V^2)
 
 【应用场景】
-- 需要查询任意两点间距离
-- 传递闭包
--  detecting negative cycles
+- 任意两点间最短距离查询
+- 传递闭包检测
+- 检测负环
+- 地图导航（预计算所有距离）
+
+【何时使用】
+- 需要频繁查询任意两点间距离
+- V <= 500（复杂度O(V^3)）
+- 预计算所有路径距离
+
+【实际案例】
+# 城市间最短距离查询系统
+# 预计算全国所有城市间的最短距离
+city_dist = [
+    [0, 30, 60, 100],
+    [30, 0, 50, 40],
+    [60, 50, 0, 20],
+    [100, 40, 20, 0]
+]
+floyd_warshall(city_dist)  # 输出任意两城市最短距离
+
+# 判断社交网络中的关系
+# 任意两人是否连通？需要几度人脉？
+social = [
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1],
+    [1, 0, 0, 0]
+]
+floyd_warshall(social)  # 找出所有人脉距离
 """
 
 def floyd_warshall(graph):
@@ -27,7 +52,7 @@ def floyd_warshall(graph):
         所有顶点对之间的最短距离矩阵
     """
     n = len(graph)
-    dist = [row[:] for row in graph]  # 复制
+    dist = [row[:] for row in graph]
     
     for k in range(n):
         for i in range(n):
@@ -36,19 +61,3 @@ def floyd_warshall(graph):
                     dist[i][j] = dist[i][k] + dist[k][j]
     
     return dist
-
-
-# ---------- Topo Sort ----------
-FILES['Chinese Algorithms/Graphs/07_Topological_Sort.py'] = 
-Topological Sort - 拓扑排序
-==========================================
-
-【问题定义】
-对有向无环图(DAG)进行线性排序，
-使得所有有向边(u,v)中，u都在v之前。
-
-【应用场景】
-- 课程先修关系
-- 项目任务调度
-- Makefile依赖解析
-- 编译器符号表构建
