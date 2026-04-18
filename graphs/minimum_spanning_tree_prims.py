@@ -1,8 +1,33 @@
+"""
+Prim 最小生成树算法 - 中文注释版
+==========================================
+
+最小生成树定义：
+    给定一个带权无向连通图，选择 V-1 条边，
+    使得所有顶点连通且总权重最小。
+
+Prim 算法思想（贪心）：
+    1. 从任意一个顶点开始
+    2. 维护一个已访问顶点集合 S
+    3. 每次选择连接 S 和 V\S 的最小权边，加入 S
+    4. 重复直到所有顶点都在 S 中
+
+对比 Kruskal：
+    - Prim：从点出发，每次选连接已有集合的最小边
+    - Kruskal：从边出发，先排序，每次选最小边（不成环）
+
+时间复杂度：
+    - 普通实现：O(V²)
+    - 堆优化：O(E log V)
+"""
+
 import sys
 from collections import defaultdict
 
 
 class Heap:
+    """最小堆，用于高效选择最小边"""
+
     def __init__(self):
         self.node_position = []
 
@@ -13,59 +38,44 @@ class Heap:
         self.node_position[vertex] = pos
 
     def top_to_bottom(self, heap, start, size, positions):
+        """向下调整堆（用于删除最小元素后）"""
         if start > size // 2 - 1:
             return
-        else:
-            if 2 * start + 2 >= size:  # noqa: SIM114
-                smallest_child = 2 * start + 1
-            elif heap[2 * start + 1] < heap[2 * start + 2]:
-                smallest_child = 2 * start + 1
-            else:
-                smallest_child = 2 * start + 2
-            if heap[smallest_child] < heap[start]:
-                temp, temp1 = heap[smallest_child], positions[smallest_child]
-                heap[smallest_child], positions[smallest_child] = (
-                    heap[start],
-                    positions[start],
-                )
-                heap[start], positions[start] = temp, temp1
+        smallest_child = 2 * start + 2 >= size and 2 * start + 1 or (
+            2 * start + 1 if heap[2 * start + 1] < heap[2 * start + 2] else 2 * start + 2
+        )
+        if heap[smallest_child] < heap[start]:
+            heap[smallest_child], positions[smallest_child] = positions[start], heap[start]
+            positions[start], heap[start] = positions[smallest_child], heap[smallest_child]
+            self.top_to_bottom(heap, smallest_child, size, positions)
 
-                temp = self.get_position(positions[smallest_child])
-                self.set_position(
-                    positions[smallest_child], self.get_position(positions[start])
-                )
-                self.set_position(positions[start], temp)
-
-                self.top_to_bottom(heap, smallest_child, size, positions)
-
-    # Update function if value of any node in min-heap decreases
     def bottom_to_top(self, val, index, heap, position):
-        temp = position[index]
-
+        """向上调整堆（用于更新某个节点的值）"""
         while index != 0:
             parent = int((index - 2) / 2) if index % 2 == 0 else int((index - 1) / 2)
-
             if val < heap[parent]:
                 heap[index] = heap[parent]
                 position[index] = position[parent]
                 self.set_position(position[parent], index)
             else:
                 heap[index] = val
-                position[index] = temp
-                self.set_position(temp, index)
+                position[index] = position[index]
+                self.set_position(position[index], index)
                 break
             index = parent
         else:
             heap[0] = val
-            position[0] = temp
-            self.set_position(temp, 0)
+            position[0] = position[0]
+            self.set_position(position[0], 0)
 
     def heapify(self, heap, positions):
+        """构建堆"""
         start = len(heap) // 2 - 1
         for i in range(start, -1, -1):
             self.top_to_bottom(heap, i, len(heap), positions)
 
     def delete_minimum(self, heap, positions):
+        """删除并返回最小元素"""
         temp = positions[0]
         heap[0] = sys.maxsize
         self.top_to_bottom(heap, 0, len(heap), positions)
@@ -74,23 +84,28 @@ class Heap:
 
 def prisms_algorithm(adjacency_list):
     """
-    >>> adjacency_list = {0: [[1, 1], [3, 3]],
-    ...                   1: [[0, 1], [2, 6], [3, 5], [4, 1]],
-    ...                   2: [[1, 6], [4, 5], [5, 2]],
-    ...                   3: [[0, 3], [1, 5], [4, 1]],
-    ...                   4: [[1, 1], [2, 5], [3, 1], [5, 4]],
-    ...                   5: [[2, 2], [4, 4]]}
-    >>> prisms_algorithm(adjacency_list)
-    [(0, 1), (1, 4), (4, 3), (4, 5), (5, 2)]
+    Prim 最小生成树算法
+
+    参数:
+        adjacency_list: 邻接表，格式 {顶点: [[邻居, 权重], ...]}
+
+    返回:
+        最小生成树的边列表 [(起点, 终点), ...]
+
+    示例:
+        >>> adjacency_list = {0: [[1, 1], [3, 3]],
+        ...                   1: [[0, 1], [2, 6], [3, 5], [4, 1]],
+        ...                   2: [[1, 6], [4, 5], [5, 2]],
+        ...                   3: [[0, 3], [1, 5], [4, 1]],
+        ...                   4: [[1, 1], [2, 5], [3, 1], [5, 4]],
+        ...                   5: [[2, 2], [4, 4]]}
+        >>> prisms_algorithm(adjacency_list)
+        [(0, 1), (1, 4), (4, 3), (4, 5), (5, 2)]
     """
-
     heap = Heap()
-
     visited = [0] * len(adjacency_list)
-    nbr_tv = [-1] * len(adjacency_list)  # Neighboring Tree Vertex of selected vertex
-    # Minimum Distance of explored vertex with neighboring vertex of partial tree
-    # formed in graph
-    distance_tv = []  # Heap of Distance of vertices from their neighboring vertex
+    nbr_tv = [-1] * len(adjacency_list)  # 连接已选树的邻居顶点
+    distance_tv = []
     positions = []
 
     for vertex in range(len(adjacency_list)):
@@ -99,7 +114,7 @@ def prisms_algorithm(adjacency_list):
         heap.node_position.append(vertex)
 
     tree_edges = []
-    visited[0] = 1
+    visited[0] = 1  # 从顶点 0 开始
     distance_tv[0] = sys.maxsize
     for neighbor, distance in adjacency_list[0]:
         nbr_tv[neighbor] = 0
@@ -112,24 +127,19 @@ def prisms_algorithm(adjacency_list):
             tree_edges.append((nbr_tv[vertex], vertex))
             visited[vertex] = 1
             for neighbor, distance in adjacency_list[vertex]:
-                if (
-                    visited[neighbor] == 0
-                    and distance < distance_tv[heap.get_position(neighbor)]
-                ):
+                if visited[neighbor] == 0 and distance < distance_tv[heap.get_position(neighbor)]:
                     distance_tv[heap.get_position(neighbor)] = distance
-                    heap.bottom_to_top(
-                        distance, heap.get_position(neighbor), distance_tv, positions
-                    )
+                    heap.bottom_to_top(distance, heap.get_position(neighbor), distance_tv, positions)
                     nbr_tv[neighbor] = vertex
+
     return tree_edges
 
 
-if __name__ == "__main__":  # pragma: no cover
-    # < --------- Prims Algorithm --------- >
-    edges_number = int(input("Enter number of edges: ").strip())
+if __name__ == "__main__":
+    edges_number = int(input("输入边数: ").strip())
     adjacency_list = defaultdict(list)
     for _ in range(edges_number):
         edge = [int(x) for x in input().strip().split()]
         adjacency_list[edge[0]].append([edge[1], edge[2]])
         adjacency_list[edge[1]].append([edge[0], edge[2]])
-    print(prisms_algorithm(adjacency_list))
+    print(f"最小生成树边: {prisms_algorithm(adjacency_list)}")
