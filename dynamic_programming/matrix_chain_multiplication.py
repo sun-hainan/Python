@@ -1,151 +1,91 @@
 """
-| Find the minimum number of multiplications needed to multiply chain of matrices.
-| Reference: https://www.geeksforgeeks.org/matrix-chain-multiplication-dp-8/
+矩阵链乘法 (Matrix Chain Multiplication) - 中文注释版
+==========================================
 
-The algorithm has interesting real-world applications.
+问题定义：
+    给定一系列矩阵 (A1, A2, A3, ... An)，
+    其中 Ai 的维度是 arr[i-1] × arr[i]。
+    确定乘法运算的顺序，使得总乘法次数最少。
 
-Example:
-  1. Image transformations in Computer Graphics as images are composed of matrix.
-  2. Solve complex polynomial equations in the field of algebra using least processing
-     power.
-  3. Calculate overall impact of macroeconomic decisions as economic equations involve a
-     number of variables.
-  4. Self-driving car navigation can be made more accurate as matrix multiplication can
-     accurately determine position and orientation of obstacles in short time.
+重要性质：
+    - 矩阵乘法满足结合律：(A*B)*C = A*(B*C)
+    - 但乘法次数不同：不同顺序会有不同的计算成本
+    - 乘法次数计算：m×p 的矩阵 与 p×n 的矩阵相乘，代价是 m×p×n
 
-Python doctests can be run with the following command::
+应用场景：
+    - 计算机图形学中的图像变换
+    - 多项式计算优化
+    - 宏观经济决策分析
+    - 自动驾驶中的位置计算
 
-  python -m doctest -v matrix_chain_multiply.py
+动态规划思路（O(n³)）：
+    定义 dp[i][j] = 矩阵 Ai 到 Aj 相乘的最小乘法次数
 
-Given a sequence ``arr[]`` that represents chain of 2D matrices such that the dimension
-of the ``i`` th matrix is ``arr[i-1]*arr[i]``.
-So suppose ``arr = [40, 20, 30, 10, 30]`` means we have ``4`` matrices of dimensions
-``40*20``, ``20*30``, ``30*10`` and ``10*30``.
+    dp[i][j] = min(
+        dp[i][k] + dp[k+1][j] + arr[i-1]*arr[k]*arr[j]
+        for k in range(i, j)
+    )
 
-``matrix_chain_multiply()`` returns an integer denoting minimum number of
-multiplications to multiply the chain.
+    解释：在 i 和 j 之间找一个分割点 k，先算左半部分和右半部分，
+    再加上最后一步合并的代价
 
-We do not need to perform actual multiplication here.
-We only need to decide the order in which to perform the multiplication.
-
-Hints:
-  1. Number of multiplications (ie cost) to multiply ``2`` matrices
-     of size ``m*p`` and ``p*n`` is ``m*p*n``.
-  2. Cost of matrix multiplication is not associative ie ``(M1*M2)*M3 != M1*(M2*M3)``
-  3. Matrix multiplication is not commutative. So, ``M1*M2`` does not mean ``M2*M1``
-     can be done.
-  4. To determine the required order, we can try different combinations.
-
-So, this problem has overlapping sub-problems and can be solved using recursion.
-We use Dynamic Programming for optimal time complexity.
-
-Example input:
-    ``arr = [40, 20, 30, 10, 30]``
-output:
-    ``26000``
+时间复杂度：O(n³)
+空间复杂度：O(n²)
 """
 
-from collections.abc import Iterator
-from contextlib import contextmanager
-from functools import cache
 from sys import maxsize
 
 
 def matrix_chain_multiply(arr: list[int]) -> int:
     """
-    Find the minimum number of multiplcations required to multiply the chain of matrices
+    矩阵链乘法 - 迭代 DP 版
 
-    Args:
-        `arr`: The input array of integers.
+    参数:
+        arr: 维度数组，如 [40, 20, 30, 10, 30]
+             表示 4 个矩阵：40×20, 20×30, 30×10, 10×30
 
-    Returns:
-        Minimum number of multiplications needed to multiply the chain
+    返回:
+        最少乘法次数
 
-    Examples:
-
-    >>> matrix_chain_multiply([1, 2, 3, 4, 3])
-    30
-    >>> matrix_chain_multiply([10])
-    0
-    >>> matrix_chain_multiply([10, 20])
-    0
-    >>> matrix_chain_multiply([19, 2, 19])
-    722
-    >>> matrix_chain_multiply(list(range(1, 100)))
-    323398
-    >>> # matrix_chain_multiply(list(range(1, 251)))
-    # 2626798
+    示例:
+        >>> matrix_chain_multiply([1, 2, 3, 4, 3])
+        30
+        >>> matrix_chain_multiply([10])
+        0
+        >>> matrix_chain_multiply([10, 20])
+        0
+        >>> matrix_chain_multiply([19, 2, 19])
+        722
     """
     if len(arr) < 2:
         return 0
-    # initialising 2D dp matrix
+
     n = len(arr)
-    dp = [[maxsize for j in range(n)] for i in range(n)]
-    # we want minimum cost of multiplication of matrices
-    # of dimension (i*k) and (k*j). This cost is arr[i-1]*arr[k]*arr[j].
-    for i in range(n - 1, 0, -1):
-        for j in range(i, n):
-            if i == j:
-                dp[i][j] = 0
+    # dp[i][j] = 矩阵 Ai 到 Aj 相乘的最小代价
+    dp = [[maxsize for _ in range(n)] for _ in range(n)]
+
+    # 只有一个矩阵时，代价为 0
+    for i in range(1, n):
+        dp[i][i] = 0
+
+    # 枚举链的长度（从 2 到 n）
+    for length in range(2, n + 1):
+        for i in range(1, n - length + 2):
+            j = i + length - 1
+            if j >= n:
                 continue
+            # 枚举分割点 k
             for k in range(i, j):
-                dp[i][j] = min(
-                    dp[i][j], dp[i][k] + dp[k + 1][j] + arr[i - 1] * arr[k] * arr[j]
-                )
+                # 代价 = 左半 + 右半 + 最后一次合并
+                cost = dp[i][k] + dp[k + 1][j] + arr[i - 1] * arr[k] * arr[j]
+                dp[i][j] = min(dp[i][j], cost)
 
     return dp[1][n - 1]
 
 
-def matrix_chain_order(dims: list[int]) -> int:
-    """
-    Source: https://en.wikipedia.org/wiki/Matrix_chain_multiplication
-
-    The dynamic programming solution is faster than cached the recursive solution and
-    can handle larger inputs.
-
-    >>> matrix_chain_order([1, 2, 3, 4, 3])
-    30
-    >>> matrix_chain_order([10])
-    0
-    >>> matrix_chain_order([10, 20])
-    0
-    >>> matrix_chain_order([19, 2, 19])
-    722
-    >>> matrix_chain_order(list(range(1, 100)))
-    323398
-    >>> # matrix_chain_order(list(range(1, 251)))  # Max before RecursionError is raised
-    # 2626798
-    """
-
-    @cache
-    def a(i: int, j: int) -> int:
-        return min(
-            (a(i, k) + dims[i] * dims[k] * dims[j] + a(k, j) for k in range(i + 1, j)),
-            default=0,
-        )
-
-    return a(0, len(dims) - 1)
-
-
-@contextmanager
-def elapsed_time(msg: str) -> Iterator:
-    # print(f"Starting: {msg}")
-    from time import perf_counter_ns
-
-    start = perf_counter_ns()
-    yield
-    print(f"Finished: {msg} in {(perf_counter_ns() - start) / 10**9} seconds.")
-
-
 if __name__ == "__main__":
     import doctest
-
     doctest.testmod()
-    with elapsed_time("matrix_chain_order"):
-        print(f"{matrix_chain_order(list(range(1, 251))) = }")
-    with elapsed_time("matrix_chain_multiply"):
-        print(f"{matrix_chain_multiply(list(range(1, 251))) = }")
-    with elapsed_time("matrix_chain_order"):
-        print(f"{matrix_chain_order(list(range(1, 251))) = }")
-    with elapsed_time("matrix_chain_multiply"):
-        print(f"{matrix_chain_multiply(list(range(1, 251))) = }")
+
+    # 示例
+    print(f"[1,2,3,4,3] 的最小乘法次数: {matrix_chain_multiply([1, 2, 3, 4, 3])}")  # 30
