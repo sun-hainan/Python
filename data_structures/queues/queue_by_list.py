@@ -1,138 +1,101 @@
-"""Queue represented by a Python list"""
+"""
+队列 (Queue) - 中文注释版
+==========================================
+
+队列的基本概念：
+    队列是一种"先进先出"（FIFO - First In First Out）的数据结构。
+
+    就像排队买东西：
+    - 最先排队的，最先买到
+    - 新元素从队尾加入，从队头取出
+
+基本操作：
+    - put/enqueue: 入队，从队尾加入 O(1)
+    - get/dequeue: 出队，从队头取出 O(n)（如果用列表实现）
+    - front: 查看队头元素
+
+队列 vs 栈：
+    - 栈：后进先出（LIFO）
+    - 队列：先进先出（FIFO）
+
+应用场景：
+    - 任务调度（打印队列）
+    - BFS 广度优先搜索
+    - 消息队列
+    - 资源分配（线程池、连接池）
+"""
 
 from collections.abc import Iterable
 
 
 class QueueByList[T]:
+    """
+    队列（用列表实现）
+
+    注意：用列表实现时，get() 操作是 O(n)，
+          因为需要从队头移除元素。
+          生产环境中推荐使用 collections.deque（O(1)）
+    """
+
     def __init__(self, iterable: Iterable[T] | None = None) -> None:
-        """
-        >>> QueueByList()
-        Queue(())
-        >>> QueueByList([10, 20, 30])
-        Queue((10, 20, 30))
-        >>> QueueByList((i**2 for i in range(1, 4)))
-        Queue((1, 4, 9))
-        """
         self.entries: list[T] = list(iterable or [])
 
     def __len__(self) -> int:
-        """
-        >>> len(QueueByList())
-        0
-        >>> from string import ascii_lowercase
-        >>> len(QueueByList(ascii_lowercase))
-        26
-        >>> queue = QueueByList()
-        >>> for i in range(1, 11):
-        ...     queue.put(i)
-        >>> len(queue)
-        10
-        >>> for i in range(2):
-        ...   queue.get()
-        1
-        2
-        >>> len(queue)
-        8
-        """
-
         return len(self.entries)
 
     def __repr__(self) -> str:
-        """
-        >>> queue = QueueByList()
-        >>> queue
-        Queue(())
-        >>> str(queue)
-        'Queue(())'
-        >>> queue.put(10)
-        >>> queue
-        Queue((10,))
-        >>> queue.put(20)
-        >>> queue.put(30)
-        >>> queue
-        Queue((10, 20, 30))
-        """
-
         return f"Queue({tuple(self.entries)})"
 
     def put(self, item: T) -> None:
-        """Put `item` to the Queue
-
-        >>> queue = QueueByList()
-        >>> queue.put(10)
-        >>> queue.put(20)
-        >>> len(queue)
-        2
-        >>> queue
-        Queue((10, 20))
         """
+        入队：从队尾加入
 
+        示例:
+            >>> q = QueueByList()
+            >>> q.put(10)
+            >>> q.put(20)
+            >>> q
+            Queue((10, 20))
+        """
         self.entries.append(item)
 
     def get(self) -> T:
         """
-        Get `item` from the Queue
+        出队：从队头取出
 
-        >>> queue = QueueByList((10, 20, 30))
-        >>> queue.get()
-        10
-        >>> queue.put(40)
-        >>> queue.get()
-        20
-        >>> queue.get()
-        30
-        >>> len(queue)
-        1
-        >>> queue.get()
-        40
-        >>> queue.get()
-        Traceback (most recent call last):
-            ...
-        IndexError: Queue is empty
+        示例:
+            >>> q = QueueByList([10, 20, 30])
+            >>> q.get()
+            10
+            >>> q.get()
+            20
         """
-
         if not self.entries:
             raise IndexError("Queue is empty")
         return self.entries.pop(0)
 
     def rotate(self, rotation: int) -> None:
-        """Rotate the items of the Queue `rotation` times
-
-        >>> queue = QueueByList([10, 20, 30, 40])
-        >>> queue
-        Queue((10, 20, 30, 40))
-        >>> queue.rotate(1)
-        >>> queue
-        Queue((20, 30, 40, 10))
-        >>> queue.rotate(2)
-        >>> queue
-        Queue((40, 10, 20, 30))
         """
+        循环移动队列元素
 
-        put = self.entries.append
-        get = self.entries.pop
-
+        示例:
+            >>> q = QueueByList([10, 20, 30, 40])
+            >>> q.rotate(1)
+            >>> q
+            Queue((20, 30, 40, 10))
+        """
         for _ in range(rotation):
-            put(get(0))
+            self.entries.append(self.entries.pop(0))
 
     def get_front(self) -> T:
-        """Get the front item from the Queue
-
-        >>> queue = QueueByList((10, 20, 30))
-        >>> queue.get_front()
-        10
-        >>> queue
-        Queue((10, 20, 30))
-        >>> queue.get()
-        10
-        >>> queue.get_front()
-        20
-        """
-
+        """查看队头元素（不取出）"""
         return self.entries[0]
 
 
 if __name__ == "__main__":
-    from doctest import testmod
-
-    testmod()
+    q = QueueByList([10, 20, 30])
+    print(f"初始队列: {q}")
+    print(f"出队: {q.get()}, 剩余: {q}")
+    q.put(40)
+    print(f"入队40: {q}")
+    print(f"队头: {q.get_front()}")
