@@ -1,47 +1,233 @@
-# -*- coding: utf-8 -*-
-
-
-
-
-
-
-
-
-10001st prime
-
-By listing the first six prime numbers: 2, 3, 5, 7, 11, and 13, we
-can see that the 6th prime is 13.
-
-What is the 10001st prime number?
-
-References:
-    - https://en.wikipedia.org/wiki/Prime_number
-    A number is prime if it has exactly two factors: 1 and itself.
-    Returns boolean representing primality of given number (i.e., if the
-    result is true, then the number is indeed prime else it is not).
-
-    >>> is_prime(2)
-    True
-    >>> is_prime(3)
-    True
-    >>> is_prime(27)
-    False
-    >>> is_prime(2999)
-    True
-    >>> is_prime(0)
-    False
-    >>> is_prime(1)
-    False
-
-    >>> solution(6)
-    13
-    >>> solution(1)
-    2
-    >>> solution(3)
-    5
-    >>> solution(20)
-    71
-    >>> solution(50)
-    229
-    >>> solution(100)
-    541
+# -*- coding: utf-8 -*-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10001st prime
+
+
+
+
+
+
+
+
+
+By listing the first six prime numbers: 2, 3, 5, 7, 11, and 13, we
+
+
+
+
+can see that the 6th prime is 13.
+
+
+
+
+
+
+
+
+
+What is the 10001st prime number?
+
+
+
+
+
+
+
+
+
+References:
+
+
+
+
+    - https://en.wikipedia.org/wiki/Prime_number
+
+
+
+
+    A number is prime if it has exactly two factors: 1 and itself.
+
+
+
+
+    Returns boolean representing primality of given number (i.e., if the
+
+
+
+
+    result is true, then the number is indeed prime else it is not).
+
+
+
+
+
+
+
+
+
+    >>> is_prime(2)
+
+
+
+
+    True
+
+
+
+
+    >>> is_prime(3)
+
+
+
+
+    True
+
+
+
+
+    >>> is_prime(27)
+
+
+
+
+    False
+
+
+
+
+    >>> is_prime(2999)
+
+
+
+
+    True
+
+
+
+
+    >>> is_prime(0)
+
+
+
+
+    False
+
+
+
+
+    >>> is_prime(1)
+
+
+
+
+    False
+
+
+
+
+
+
+
+
+
+    >>> solution(6)
+
+
+
+
+    13
+
+
+
+
+    >>> solution(1)
+
+
+
+
+    2
+
+
+
+
+    >>> solution(3)
+
+
+
+
+    5
+
+
+
+
+    >>> solution(20)
+
+
+
+
+    71
+
+
+
+
+    >>> solution(50)
+
+
+
+
+    229
+
+
+
+
+    >>> solution(100)
+
+
+
+
+    541
+
+

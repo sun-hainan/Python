@@ -21,3 +21,7 @@ __all__ = [
     "bpp_algorithm",
     "cook_levin",
 ]
+
+if __name__ == "__main__":
+    # 示例测试
+    pass

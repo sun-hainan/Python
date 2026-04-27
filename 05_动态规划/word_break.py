@@ -1,104 +1,208 @@
 # -*- coding: utf-8 -*-
+
 """
+
 算法实现：05_动态规划 / word_break
 
+
+
 本文件实现 word_break 相关的算法功能。
+
 """
 
+
+
 import functools
+
 from typing import Any
 
 
+
+
+
 def word_break(string: str, words: list[str]) -> bool:
-    # word_break function
 
     # word_break function
+
+
+
+    # word_break function
+
     # word_break 函数实现
+
     """
+
     Return True if numbers have opposite signs False otherwise.
 
+
+
     >>> word_break("applepenapple", ["apple","pen"])
+
     True
+
     >>> word_break("catsandog", ["cats","dog","sand","and","cat"])
+
     False
+
     >>> word_break("cars", ["car","ca","rs"])
+
     True
+
     >>> word_break('abc', [])
+
     False
+
     >>> word_break(123, ['a'])
+
     Traceback (most recent call last):
+
         ...
+
     ValueError: the string should be not empty string
+
     >>> word_break('', ['a'])
+
     Traceback (most recent call last):
+
         ...
+
     ValueError: the string should be not empty string
+
     >>> word_break('abc', [123])
+
     Traceback (most recent call last):
+
         ...
+
     ValueError: the words should be a list of non-empty strings
+
     >>> word_break('abc', [''])
+
     Traceback (most recent call last):
+
         ...
+
     ValueError: the words should be a list of non-empty strings
+
     """
 
+
+
     # Validation
+
     if not isinstance(string, str) or len(string) == 0:
+
         raise ValueError("the string should be not empty string")
 
+
+
     if not isinstance(words, list) or not all(
+
         isinstance(item, str) and len(item) > 0 for item in words
+
     ):
+
         raise ValueError("the words should be a list of non-empty strings")
 
+
+
     # Build trie
+
     trie: dict[str, Any] = {}
+
     word_keeper_key = "WORD_KEEPER"
 
+
+
     for word in words:
+
         trie_node = trie
+
         for c in word:
+
             if c not in trie_node:
+
                 trie_node[c] = {}
+
+
 
             trie_node = trie_node[c]
 
+
+
         trie_node[word_keeper_key] = True
+
+
 
     len_string = len(string)
 
+
+
     # Dynamic programming method
+
     @functools.cache
+
     def is_breakable(index: int) -> bool:
-    # is_breakable function
 
     # is_breakable function
+
+
+
+    # is_breakable function
+
     # is_breakable 函数实现
+
         """
+
         >>> string = 'a'
+
         >>> is_breakable(1)
+
         True
+
         """
+
         if index == len_string:
+
             return True
 
+
+
         trie_node: Any = trie
+
         for i in range(index, len_string):
+
             trie_node = trie_node.get(string[i], None)
 
+
+
             if trie_node is None:
+
                 return False
 
+
+
             if trie_node.get(word_keeper_key, False) and is_breakable(i + 1):
+
                 return True
 
+
+
         return False
+
+
 
     return is_breakable(0)
 
 
+
+
+
 if __name__ == "__main__":
+
     import doctest
 
+
+
     doctest.testmod()
+

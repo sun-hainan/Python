@@ -27,3 +27,7 @@ __all__ = [
     "ll1_parser",
     "turing_machine",
 ]
+
+if __name__ == "__main__":
+    # 示例测试
+    pass
