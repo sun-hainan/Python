@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+
+
+
+
+
+
+
+
+Starting in the top left corner of a 2x2 grid, and only being able to move to
+the right and down, there are exactly 6 routes to the bottom right corner.
+How many such routes are there through a 20x20 grid?
+    corner going to bottom right corner and being able to move right and down
+    only.
+    >>> solution(25)
+    126410606437752
+    >>> solution(23)
+    8233430727600
+    >>> solution(20)
+    137846528820
+    >>> solution(15)
+    155117520
+    >>> solution(1)
+    2

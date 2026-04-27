@@ -1,19 +1,35 @@
+# -*- coding: utf-8 -*-
 """
-Problem 39: https://projecteuler.net/problem=39
+Project Euler Problem 039
 
-If p is the perimeter of a right angle triangle with integral length sides,
-{a,b,c}, there are exactly three solutions for p = 120.
-{20,48,52}, {24,45,51}, {30,40,50}
-
-For which value of p ≤ 1000, is the number of solutions maximised?
+解决 Project Euler 第 039 题的 Python 实现。
+https://projecteuler.net/problem=039
 """
 
 from __future__ import annotations
+
+"""
+Project Euler Problem 039 — 中文注释版
+https://projecteuler.net/problem=039
+
+问题描述:
+（请根据具体题目补充此部分）
+
+解题思路:
+（请根据具体题目补充此部分）
+"""
+
+
+
 
 import typing
 from collections import Counter
 
 
+
+# =============================================================================
+# Project Euler 问题 039
+# =============================================================================
 def pythagorean_triple(max_perimeter: int) -> typing.Counter[int]:
     """
     Returns a dictionary with keys as the perimeter of a right angled triangle
@@ -27,6 +43,7 @@ def pythagorean_triple(max_perimeter: int) -> typing.Counter[int]:
     """
     triplets: typing.Counter[int] = Counter()
     for base in range(1, max_perimeter + 1):
+    # 遍历循环
         for perpendicular in range(base, max_perimeter + 1):
             hypotenuse = (base * base + perpendicular * perpendicular) ** 0.5
             if hypotenuse == int(hypotenuse):
@@ -35,9 +52,11 @@ def pythagorean_triple(max_perimeter: int) -> typing.Counter[int]:
                     continue
                 triplets[perimeter] += 1
     return triplets
+    # 返回结果
 
 
 def solution(n: int = 1000) -> int:
+    # solution 函数实现
     """
     Returns perimeter with maximum solutions.
     >>> solution(100)
@@ -49,6 +68,7 @@ def solution(n: int = 1000) -> int:
     """
     triplets = pythagorean_triple(n)
     return triplets.most_common(1)[0][0]
+    # 返回结果
 
 
 if __name__ == "__main__":

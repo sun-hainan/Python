@@ -1,0 +1,96 @@
+# -*- coding: utf-8 -*-
+"""
+算法实现：01_排序与搜索 / circle_sort
+
+本文件实现 circle_sort 相关的算法功能。
+"""
+
+# circle_sort 函数实现
+def circle_sort(collection: list) -> list:
+    """A pure Python implementation of circle sort algorithm
+
+    :param collection: a mutable collection of comparable items in any order
+    :return: the same collection in ascending order
+
+    Examples:
+    >>> circle_sort([0, 5, 3, 2, 2])
+    [0, 2, 2, 3, 5]
+    >>> circle_sort([])
+    []
+    >>> circle_sort([-2, 5, 0, -45])
+    [-45, -2, 0, 5]
+    >>> collections = ([], [0, 5, 3, 2, 2], [-2, 5, 0, -45])
+    >>> all(sorted(collection) == circle_sort(collection) for collection in collections)
+    True
+    """
+
+    if len(collection) < 2:
+    # 条件判断
+        return collection
+    # 返回结果
+
+
+# circle_sort_util 函数实现
+    def circle_sort_util(collection: list, low: int, high: int) -> bool:
+        """
+        >>> arr = [5,4,3,2,1]
+        >>> circle_sort_util(lst, 0, 2)
+        True
+        >>> arr
+        [3, 4, 5, 2, 1]
+        """
+
+        swapped = False
+
+        if low == high:
+    # 条件判断
+            return swapped
+    # 返回结果
+
+        left = low
+        right = high
+
+        while left < right:
+    # 条件循环
+            if collection[left] > collection[right]:
+    # 条件判断
+                collection[left], collection[right] = (
+                    collection[right],
+                    collection[left],
+                )
+                swapped = True
+
+            left += 1
+            right -= 1
+
+        if left == right and collection[left] > collection[right + 1]:
+    # 条件判断
+            collection[left], collection[right + 1] = (
+                collection[right + 1],
+                collection[left],
+            )
+
+            swapped = True
+
+        mid = low + int((high - low) / 2)
+        left_swap = circle_sort_util(collection, low, mid)
+        right_swap = circle_sort_util(collection, mid + 1, high)
+
+        return swapped or left_swap or right_swap
+    # 返回结果
+
+    is_not_sorted = True
+
+    while is_not_sorted is True:
+    # 条件循环
+        is_not_sorted = circle_sort_util(collection, 0, len(collection) - 1)
+
+    return collection
+    # 返回结果
+
+
+if __name__ == "__main__":
+    # 条件判断
+    user_input = input("Enter numbers separated by a comma:\n").strip()
+    unsorted = [int(item) for item in user_input.split(",")]
+    print(circle_sort(unsorted))

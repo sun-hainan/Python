@@ -1,0 +1,281 @@
+# -*- coding: utf-8 -*-
+"""
+算法实现：02_数据结构 / randomized_heap
+
+本文件实现 randomized_heap 相关的算法功能。
+"""
+
+from __future__ import annotations
+
+
+
+#!/usr/bin/env python3
+
+"""
+Project Euler Problem  -- Chinese comment version
+https://projecteuler.net/problem=
+
+Description: (placeholder - add problem description)
+Solution: (placeholder - add solution explanation)
+"""
+
+
+import random
+from collections.abc import Iterable
+from typing import Any, TypeVar
+
+T = TypeVar("T", bound=bool)
+
+
+
+# =============================================================================
+# 算法模块：unknown
+# =============================================================================
+class RandomizedHeapNode[T: bool]:
+    # RandomizedHeapNode class
+
+    # RandomizedHeapNode class
+    """
+    One node of the randomized heap. Contains the value and references to
+    two children.
+    """
+
+
+    def __init__(self, value: T) -> None:
+    # __init__ function
+
+    # __init__ function
+        self._value: T = value
+        self.left: RandomizedHeapNode[T] | None = None
+        self.right: RandomizedHeapNode[T] | None = None
+
+    @property
+    def value(self) -> T:
+    # value function
+
+    # value function
+        """
+        Return the value of the node.
+
+        >>> rhn = RandomizedHeapNode(10)
+        >>> rhn.value
+        10
+        >>> rhn = RandomizedHeapNode(-10)
+        >>> rhn.value
+        -10
+        """
+        return self._value
+
+    @staticmethod
+    def merge(
+    # merge function
+
+    # merge function
+        root1: RandomizedHeapNode[T] | None, root2: RandomizedHeapNode[T] | None
+    ) -> RandomizedHeapNode[T] | None:
+        """
+        Merge 2 nodes together.
+
+        >>> rhn1 = RandomizedHeapNode(10)
+        >>> rhn2 = RandomizedHeapNode(20)
+        >>> RandomizedHeapNode.merge(rhn1, rhn2).value
+        10
+
+        >>> rhn1 = RandomizedHeapNode(20)
+        >>> rhn2 = RandomizedHeapNode(10)
+        >>> RandomizedHeapNode.merge(rhn1, rhn2).value
+        10
+
+        >>> rhn1 = RandomizedHeapNode(5)
+        >>> rhn2 = RandomizedHeapNode(0)
+        >>> RandomizedHeapNode.merge(rhn1, rhn2).value
+        0
+        """
+        if not root1:
+            return root2
+
+        if not root2:
+            return root1
+
+        if root1.value > root2.value:
+            root1, root2 = root2, root1
+
+        if random.choice([True, False]):
+            root1.left, root1.right = root1.right, root1.left
+
+        root1.left = RandomizedHeapNode.merge(root1.left, root2)
+
+        return root1
+
+
+class RandomizedHeap[T: bool]:
+    # RandomizedHeap class
+
+    # RandomizedHeap class
+    """
+    A data structure that allows inserting a new value and to pop the smallest
+    values. Both operations take O(logN) time where N is the size of the
+    structure.
+    Wiki: https://en.wikipedia.org/wiki/Randomized_meldable_heap
+
+    >>> RandomizedHeap([2, 3, 1, 5, 1, 7]).to_sorted_list()
+    [1, 1, 2, 3, 5, 7]
+
+    >>> rh = RandomizedHeap()
+    >>> rh.pop()
+    Traceback (most recent call last):
+        ...
+    IndexError: Can't get top element for the empty heap.
+
+    >>> rh.insert(1)
+    >>> rh.insert(-1)
+    >>> rh.insert(0)
+    >>> rh.to_sorted_list()
+    [-1, 0, 1]
+    """
+
+    def __init__(self, data: Iterable[T] | None = ()) -> None:
+    # __init__ function
+
+    # __init__ function
+        """
+        >>> rh = RandomizedHeap([3, 1, 3, 7])
+        >>> rh.to_sorted_list()
+        [1, 3, 3, 7]
+        """
+        self._root: RandomizedHeapNode[T] | None = None
+
+        if data:
+            for item in data:
+                self.insert(item)
+
+    def insert(self, value: T) -> None:
+    # insert function
+
+    # insert function
+        """
+        Insert the value into the heap.
+
+        >>> rh = RandomizedHeap()
+        >>> rh.insert(3)
+        >>> rh.insert(1)
+        >>> rh.insert(3)
+        >>> rh.insert(7)
+        >>> rh.to_sorted_list()
+        [1, 3, 3, 7]
+        """
+        self._root = RandomizedHeapNode.merge(self._root, RandomizedHeapNode(value))
+
+    def pop(self) -> T | None:
+    # pop function
+
+    # pop function
+        """
+        Pop the smallest value from the heap and return it.
+
+        >>> rh = RandomizedHeap([3, 1, 3, 7])
+        >>> rh.pop()
+        1
+        >>> rh.pop()
+        3
+        >>> rh.pop()
+        3
+        >>> rh.pop()
+        7
+        >>> rh.pop()
+        Traceback (most recent call last):
+            ...
+        IndexError: Can't get top element for the empty heap.
+        """
+
+        result = self.top()
+
+        if self._root is None:
+            return None
+
+        self._root = RandomizedHeapNode.merge(self._root.left, self._root.right)
+
+        return result
+
+    def top(self) -> T:
+    # top function
+
+    # top function
+        """
+        Return the smallest value from the heap.
+
+        >>> rh = RandomizedHeap()
+        >>> rh.insert(3)
+        >>> rh.top()
+        3
+        >>> rh.insert(1)
+        >>> rh.top()
+        1
+        >>> rh.insert(3)
+        >>> rh.top()
+        1
+        >>> rh.insert(7)
+        >>> rh.top()
+        1
+        """
+        if not self._root:
+            raise IndexError("Can't get top element for the empty heap.")
+        return self._root.value
+
+    def clear(self) -> None:
+    # clear function
+
+    # clear function
+        """
+        Clear the heap.
+
+        >>> rh = RandomizedHeap([3, 1, 3, 7])
+        >>> rh.clear()
+        >>> rh.pop()
+        Traceback (most recent call last):
+            ...
+        IndexError: Can't get top element for the empty heap.
+        """
+        self._root = None
+
+    def to_sorted_list(self) -> list[Any]:
+    # to_sorted_list function
+
+    # to_sorted_list function
+        """
+        Returns sorted list containing all the values in the heap.
+
+        >>> rh = RandomizedHeap([3, 1, 3, 7])
+        >>> rh.to_sorted_list()
+        [1, 3, 3, 7]
+        """
+        result = []
+        while self:
+            result.append(self.pop())
+
+        return result
+
+    def __bool__(self) -> bool:
+    # __bool__ function
+
+    # __bool__ function
+        """
+        Check if the heap is not empty.
+
+        >>> rh = RandomizedHeap()
+        >>> bool(rh)
+        False
+        >>> rh.insert(1)
+        >>> bool(rh)
+        True
+        >>> rh.clear()
+        >>> bool(rh)
+        False
+        """
+        return self._root is not None
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()

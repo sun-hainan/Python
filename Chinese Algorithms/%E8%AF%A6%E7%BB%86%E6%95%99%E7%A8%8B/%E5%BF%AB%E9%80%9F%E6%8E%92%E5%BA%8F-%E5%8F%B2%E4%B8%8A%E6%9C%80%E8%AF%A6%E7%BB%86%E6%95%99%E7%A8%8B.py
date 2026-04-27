@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+算法实现：%E8%AF%A6%E7%BB%86%E6%95%99%E7%A8%8B / %E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F-%E5%8F%B2%E4%B8%8A%E6%9C%80%E8%AF%A6%E7%BB%86%E6%95%99%E7%A8%8B
+
+本文件实现 %E5%BF%AB%E9%80%9F%E6%8E%92%E5%BA%8F-%E5%8F%B2%E4%B8%8A%E6%9C%80%E8%AF%A6%E7%BB%86%E6%95%99%E7%A8%8B 相关的算法功能。
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -449,6 +456,8 @@ print("""
 
 举例：
 def 数到几(n):
+    # 数到几 function implementation
+
     print(n)
     if n > 1:
         数到几(n-1)  # 调用自己
@@ -497,3 +506,9 @@ print("=" * 60)
 print("  教程结束！")
 print("  有任何问题欢迎提问！")
 print("=" * 60)
+
+
+if __name__ == "__main__":
+    # Test entry point
+    result = 数到几()
+    print("Problem  result: {}", result)

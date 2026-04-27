@@ -1,27 +1,34 @@
+# -*- coding: utf-8 -*-
 """
-Problem 46: https://projecteuler.net/problem=46
+Project Euler Problem 046
 
-It was proposed by Christian Goldbach that every odd composite number can be
-written as the sum of a prime and twice a square.
-
-9 = 7 + 2 x 12
-15 = 7 + 2 x 22
-21 = 3 + 2 x 32
-25 = 7 + 2 x 32
-27 = 19 + 2 x 22
-33 = 31 + 2 x 12
-
-It turns out that the conjecture was false.
-
-What is the smallest odd composite that cannot be written as the sum of a
-prime and twice a square?
+解决 Project Euler 第 046 题的 Python 实现。
+https://projecteuler.net/problem=046
 """
 
 from __future__ import annotations
 
+"""
+Project Euler Problem 046 — 中文注释版
+https://projecteuler.net/problem=046
+
+问题描述:
+（请根据具体题目补充此部分）
+
+解题思路:
+（请根据具体题目补充此部分）
+"""
+
+
+
+
 import math
 
 
+
+# =============================================================================
+# Project Euler 问题 046
+# =============================================================================
 def is_prime(number: int) -> bool:
     """Checks to see if a number is a prime in O(sqrt(n)).
 
@@ -50,14 +57,18 @@ def is_prime(number: int) -> bool:
     if 1 < number < 4:
         # 2 and 3 are primes
         return True
+    # 返回结果
     elif number < 2 or number % 2 == 0 or number % 3 == 0:
         # Negatives, 0, 1, all even numbers, all multiples of 3 are not primes
         return False
+    # 返回结果
 
     # All primes number are in format of 6k +/- 1
     for i in range(5, int(math.sqrt(number) + 1), 6):
+    # 遍历循环
         if number % i == 0 or number % (i + 2) == 0:
             return False
+    # 返回结果
     return True
 
 
@@ -65,6 +76,7 @@ odd_composites = [num for num in range(3, 100001, 2) if not is_prime(num)]
 
 
 def compute_nums(n: int) -> list[int]:
+    # compute_nums 函数实现
     """
     Returns a list of first n odd composite numbers which do
     not follow the conjecture.
@@ -93,8 +105,10 @@ def compute_nums(n: int) -> list[int]:
 
     list_nums = []
     for num in range(len(odd_composites)):
+    # 遍历循环
         i = 0
         while 2 * i * i <= odd_composites[num]:
+    # 条件循环
             rem = odd_composites[num] - 2 * i * i
             if is_prime(rem):
                 break
@@ -103,13 +117,17 @@ def compute_nums(n: int) -> list[int]:
             list_nums.append(odd_composites[num])
             if len(list_nums) == n:
                 return list_nums
+    # 返回结果
 
     return []
+    # 返回结果
 
 
 def solution() -> int:
+    # solution 函数实现
     """Return the solution to the problem"""
     return compute_nums(1)[0]
+    # 返回结果
 
 
 if __name__ == "__main__":

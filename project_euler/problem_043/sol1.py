@@ -1,26 +1,18 @@
+# -*- coding: utf-8 -*-
 """
-Problem 43: https://projecteuler.net/problem=43
+Project Euler Problem 043
 
-The number, 1406357289, is a 0 to 9 pandigital number because it is made up of
-each of the digits 0 to 9 in some order, but it also has a rather interesting
-sub-string divisibility property.
-
-Let d1 be the 1st digit, d2 be the 2nd digit, and so on. In this way, we note
-the following:
-
-d2d3d4=406 is divisible by 2
-d3d4d5=063 is divisible by 3
-d4d5d6=635 is divisible by 5
-d5d6d7=357 is divisible by 7
-d6d7d8=572 is divisible by 11
-d7d8d9=728 is divisible by 13
-d8d9d10=289 is divisible by 17
-Find the sum of all 0 to 9 pandigital numbers with this property.
+解决 Project Euler 第 043 题的 Python 实现。
+https://projecteuler.net/problem=043
 """
 
 from itertools import permutations
 
 
+
+# =============================================================================
+# Project Euler 问题 043
+# =============================================================================
 def is_substring_divisible(num: tuple) -> bool:
     """
     Returns True if the pandigital number passes
@@ -34,21 +26,27 @@ def is_substring_divisible(num: tuple) -> bool:
     """
     if num[3] % 2 != 0:
         return False
+    # 返回结果
 
     if (num[2] + num[3] + num[4]) % 3 != 0:
         return False
+    # 返回结果
 
     if num[5] % 5 != 0:
         return False
+    # 返回结果
 
     tests = [7, 11, 13, 17]
     for i, test in enumerate(tests):
+    # 遍历循环
         if (num[i + 4] * 100 + num[i + 5] * 10 + num[i + 6]) % test != 0:
             return False
+    # 返回结果
     return True
 
 
 def solution(n: int = 10) -> int:
+    # solution 函数实现
     """
     Returns the sum of all pandigital numbers which pass the
     divisibility tests.
@@ -56,8 +54,10 @@ def solution(n: int = 10) -> int:
     16695334890
     """
     return sum(
+    # 返回结果
         int("".join(map(str, num)))
         for num in permutations(range(n))
+    # 遍历循环
         if is_substring_divisible(num)
     )
 

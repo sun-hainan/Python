@@ -134,6 +134,8 @@ data_structures/
 | `cellular_automata/` | 元胞自动机 |
 | `conversions/` | 进制转换 |
 | `data_compression/` | 数据压缩 |
+| `compiler_optimization/` | 编译器优化算法 |
+| `software_engineering/` | 软件工程算法 |
 | `divide_and_conquer/` | 分治法 |
 | `electronics/` | 电子学算法 |
 | `financial/` | 金融算法 |
@@ -148,6 +150,30 @@ data_structures/
 | `quantum/` | 量子计算 |
 | `scheduling/` | 调度算法 |
 | `strings/` | 字符串算法 |
+
+### 🔧 编译器优化算法 (compiler_optimization/)
+| 算法 | 文件 | 说明 |
+|------|------|------|
+| 图着色寄存器分配 | `register_allocation.py` | Chaitin-Briggs，O(V*E) |
+| 指令调度 | `instruction_scheduling.py` | List Scheduling，O(V*E) |
+| 循环展开 | `loop_unrolling.py` | 减少循环开销，O(n) |
+| 复制传播 | `copy_propagation.py` | 变量等价替换，O(N*L) |
+| 常量折叠 | `constant_folding.py` | 编译时求值，O(N) |
+| 死代码消除 | `dead_code_elimination.py` | 删除无用代码，O(N+E) |
+| 公共子表达式消除 | `common_subexpression.py` | CSE，O(N*H) |
+| 强度削减 | `strength_reduction.py` | 高代价→低代价操作，O(N*L) |
+
+### 🛠 软件工程算法 (software_engineering/)
+| 算法 | 文件 | 说明 |
+|------|------|------|
+| Myers Diff | `diff_algorithm.py` | 最优 diff，O((N+M)D) |
+| 三路合并 | `three_way_merge.py` | 基于共同祖先合并，O(N) |
+| 编辑距离 | `levenshtein_distance.py` | 字符串转换代价，O(N*M) |
+| Rabin-Karp | `rabin_karp_rolling.py` | 滚动哈希匹配，O(N+M) |
+| 最长公共子序列 | `longest_common_subsequence.py` | LCS，O(N*M) |
+| 代码语义搜索 | `semantic_search.py` | Embedding 向量搜索，O(N*D) |
+| 代码克隆检测 | `code_clone_detection.py` | Token/树编辑距离，O(N²*L) |
+| AST 相似度比较 | `ast_similarity.py` | 树编辑距离，O(N*M) |
 
 ---
 

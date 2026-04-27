@@ -1,22 +1,34 @@
+# -*- coding: utf-8 -*-
 """
-Truncatable primes
-Problem 37: https://projecteuler.net/problem=37
+Project Euler Problem 037
 
-The number 3797 has an interesting property. Being prime itself, it is possible
-to continuously remove digits from left to right, and remain prime at each stage:
-3797, 797, 97, and 7. Similarly we can work from right to left: 3797, 379, 37, and 3.
-
-Find the sum of the only eleven primes that are both truncatable from left to right
-and right to left.
-
-NOTE: 2, 3, 5, and 7 are not considered to be truncatable primes.
+解决 Project Euler 第 037 题的 Python 实现。
+https://projecteuler.net/problem=037
 """
 
 from __future__ import annotations
 
+"""
+Project Euler Problem 037 — 中文注释版
+https://projecteuler.net/problem=037
+
+问题描述:
+（请根据具体题目补充此部分）
+
+解题思路:
+（请根据具体题目补充此部分）
+"""
+
+
+
+
 import math
 
 
+
+# =============================================================================
+# Project Euler 问题 037
+# =============================================================================
 def is_prime(number: int) -> bool:
     """Checks to see if a number is a prime in O(sqrt(n)).
 
@@ -45,18 +57,23 @@ def is_prime(number: int) -> bool:
     if 1 < number < 4:
         # 2 and 3 are primes
         return True
+    # 返回结果
     elif number < 2 or number % 2 == 0 or number % 3 == 0:
         # Negatives, 0, 1, all even numbers, all multiples of 3 are not primes
         return False
+    # 返回结果
 
     # All primes number are in format of 6k +/- 1
     for i in range(5, int(math.sqrt(number) + 1), 6):
+    # 遍历循环
         if number % i == 0 or number % (i + 2) == 0:
             return False
+    # 返回结果
     return True
 
 
 def list_truncated_nums(n: int) -> list[int]:
+    # list_truncated_nums 函数实现
     """
     Returns a list of all left and right truncated numbers of n
     >>> list_truncated_nums(927628)
@@ -69,12 +86,15 @@ def list_truncated_nums(n: int) -> list[int]:
     str_num = str(n)
     list_nums = [n]
     for i in range(1, len(str_num)):
+    # 遍历循环
         list_nums.append(int(str_num[i:]))
         list_nums.append(int(str_num[:-i]))
     return list_nums
+    # 返回结果
 
 
 def validate(n: int) -> bool:
+    # validate 函数实现
     """
     To optimize the approach, we will rule out the numbers above 1000,
     whose first or last three digits are not prime
@@ -86,12 +106,14 @@ def validate(n: int) -> bool:
     True
     """
     return not (
+    # 返回结果
         len(str(n)) > 3
         and (not is_prime(int(str(n)[-3:])) or not is_prime(int(str(n)[:3])))
     )
 
 
 def compute_truncated_primes(count: int = 11) -> list[int]:
+    # compute_truncated_primes 函数实现
     """
     Returns the list of truncated primes
     >>> compute_truncated_primes(11)
@@ -100,19 +122,23 @@ def compute_truncated_primes(count: int = 11) -> list[int]:
     list_truncated_primes: list[int] = []
     num = 13
     while len(list_truncated_primes) != count:
+    # 条件循环
         if validate(num):
             list_nums = list_truncated_nums(num)
             if all(is_prime(i) for i in list_nums):
                 list_truncated_primes.append(num)
         num += 2
     return list_truncated_primes
+    # 返回结果
 
 
 def solution() -> int:
+    # solution 函数实现
     """
     Returns the sum of truncated primes
     """
     return sum(compute_truncated_primes(11))
+    # 返回结果
 
 
 if __name__ == "__main__":
