@@ -1,241 +1,169 @@
-# Python 算法大全 🐍
+# 计算机算法库
 
-[![原仓库 Stars](https://img.shields.io/github/stars/TheAlgorithms/Python?style=flat-square&label=TheAlgorithms/Python)](https://github.com/TheAlgorithms/Python)
-[![Fork Stars](https://img.shields.io/github/stars/sun-hainan/Python?style=flat-square&label=Sun-hainan/Python)](https://github.com/sun-hainan/Python)
-[![Repo Size](https://img.shields.io/github/repo-size/sun-hainan/Python?style=flat-square)](https://github.com/sun-hainan/Python)
-[![License](https://img.shields.io/github/license/sun-hainan/Python?style=flat-square)](LICENSE.md)
-
-<div align="center">
-  <h1>Python 算法实现 - 中文学习版</h1>
-  <p>本仓库是 <a href="https://github.com/TheAlgorithms/Python">TheAlgorithms/Python</a> 的中文学习分支，所有算法均以 Python 实现，适合学习与参考。</p>
-  <p>⚠️ 本仓库仅供学习目的。算法实现可能不如 Python 标准库高效，请斟酌使用。</p>
-</div>
+> 全面、系统、持续更新的算法学习与实现仓库。覆盖从基础数据结构到前沿AI/安全/系统领域的~2800+个算法实现。
 
 ---
 
-## 📚 算法分类目录
+## 目录结构
 
-### 🔢 排序算法 (sorts)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| 冒泡排序 | `bubble_sort.py` | 最基础的比较排序，O(n²) |
-| 选择排序 | `selection_sort.py` | 每次选择最小元素，O(n²) |
-| 插入排序 | `insertion_sort.py` | 适合小规模或近乎有序数据，O(n²) |
-| 归并排序 | `merge_sort.py` | 分治思想，稳定排序，O(n log n) |
-| 快速排序 | `quick_sort.py` | 原地排序，平均 O(n log n) |
-| 堆排序 | `heap_sort.py` | 基于二叉堆，O(n log n) |
-| 计数排序 | `counting_sort.py` | 非比较排序，适合整数，O(n+k) |
-| 基数排序 | `radix_sort.py` | 按位排序，O(nk) |
-| 桶排序 | `bucket_sort.py` | 分桶后再排序 |
-| 希尔排序 | `shell_sort.py` | 插入排序的改进版 |
-| Tim Sort | `tim_sort.py` | Python 内置排序算法 |
-| 拓扑排序 | `topological_sort.py` | 有向无环图排序 |
-| 其他 | ... | 详见 `sorts/` 目录 |
+### 基础与数据结构
 
-### 📊 数据结构 (data_structures)
-```
-data_structures/
-├── arrays/        # 数组操作
-├── binary_tree/   # 二叉树
-├── disjoint_set/  # 并查集
-├── hashing/       # 哈希表
-├── heap/          # 堆（二叉堆、斐波那契堆）
-├── kd_tree/       # K维树
-├── linked_list/   # 链表（单链表、双链表）
-├── queues/        # 队列
-├── stacks/        # 栈
-├── suffix_tree/   # 后缀树
-└── trie/          # 前缀树/Trie树
-```
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 01 | 排序与搜索 | 各类排序算法、二分查找及相关扩展 |
+| 02 | 数据结构 | 基础数据结构：栈/队列/链表/哈希表等 |
+| 03 | 字符串算法 | KMP/AC自动机/后缀数组/编辑距离等 |
+| 08 | 位运算 | 位操作技巧/Bitmap/BloomFilter/CRC |
+| 10 | 高级数据结构 | 高级结构：线段树/平衡树/跳表/图结构 |
+| 11 | 计算几何 | 凸包/旋转卡壳/Voronoi/三角剖分 |
+| 19 | 代数算法 | 多项式/矩阵分解/LU-QR/有限域 |
+| 27 | 整数与FFT | 大数乘法/FFT/数论算法 |
 
-### 🔍 搜索算法 (searches)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| 二分搜索 | `binary_search.py` | 有序数组，O(log n) |
-| 线性搜索 | `linear_search.py` | 遍历查找，O(n) |
-| 跳跃搜索 | `jump_search.py` | 跳跃 + 线性，O(√n) |
-| 插值搜索 | `interpolation_search.py` | 适合均匀分布数据 |
-| 指数搜索 | `exponential_search.py` | O(log n) |
-| 广度优先搜索 | `breadth_first_search.py` | BFS，图遍历 |
-| 深度优先搜索 | `depth_first_search.py` | DFS，图遍历 |
+### 算法范式
 
-### 📈 动态规划 (dynamic_programming)
-| 问题 | 文件 | 说明 |
-|------|------|------|
-| 斐波那契 | `fibonacci.py` | 最基础的 DP |
-| 背包问题 | `knapsack.py` | 0-1背包、完全背包 |
-| 最长公共子序列 | `lcs.py` | LCS |
-| 最长递增子序列 | `lis.py` | LIS |
-| 编辑距离 | `edit_distance.py` | 字符串转换代价 |
-| 路径计数 | `count_ways.py` | 爬楼梯问题 |
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 04 | 图算法 | BFS/DFS/Dijkstra/并查集/拓扑排序 |
+| 05 | 动态规划 | 经典DP/状态压缩/树形DP/区间DP |
+| 06 | 网络流与匹配 | 最大流/二分匹配/费用流/Edmonds Blossom |
+| 07 | 贪心与分治 | 贪心策略/分治思想/归约 |
+| 71 | 约束求解 | SAT求解器/DPLL/CDCL/WalkSAT/AC-3 |
+| 72 | 组合优化 | TSP/装箱/调度/近似算法 |
+| 86 | 近似算法 | PTAS/FPTAS/随机近似/次模优化 |
+| 64 | 次线性算法 | Skiplist/LFU/K-Server/流式算法 |
 
-### 🌲 图算法 (graphs)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| BFS | `breadth_first_search.py` | 广度优先遍历 |
-| DFS | `depth_first_search.py` | 深度优先遍历 |
-| Dijkstra | `dijkstra.py` | 单源最短路径 |
-| Bellman-Ford | `bellman_ford.py` | 可处理负权边 |
-| Floyd-Warshall | `floyd_warshall.py` | 全源最短路径 |
-| Kruskal | `minimum_spanning_tree_kruskal.py` | 最小生成树 |
-| Prim | `minimum_spanning_tree_prims.py` | 最小生成树 |
-| A* | `a_star.py` | 启发式搜索 |
-| Kosaraju | `scc_kosaraju.py` | 强连通分量 |
-| Tarjan | `tarjans_scc.py` | 强连通分量 |
+### 理论计算机科学
 
-### 🔐 密码学 (ciphers)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| Caesar | `caesar.py` | 凯撒密码 |
-| Vigenere | `vigenere.py` | 维吉尼亚密码 |
-| RSA | `rsa.py` | RSA 非对称加密 |
-| AES | `aes.py` | 高级加密标准 |
-| Hill | `hill.py` | 希尔密码 |
-| 栅栏密码 | `rail_fence_cipher.py` | 栅栏密码 |
-| Playfair | `playfair.py` | 普莱费尔密码 |
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 12 | 密码学与安全 | 对称加密/非对称加密/哈希/数字签名 |
+| 14 | 信息论 | 香农熵/互信息/信道容量/Turbo/LDPC |
+| 15 | 操作系统与调度 | CFS/实时调度/内存管理/同步原语 |
+| 20 | 形式语言与自动机 | NFA→DFA/泵引理/CYK/LL/LR分析器 |
+| 22 | 分布式算法 | Raft/Paxos/Gossip/向量时钟/2PC |
+| 28 | 博弈论 | Minimax/Alpha-Beta/纳什均衡 |
+| 73 | 计算复杂性理论 | 时间层次/P≠NP/PCP/BPP/IP=PSPACE |
+| 31 | 参数算法 | FPT/核化/树宽/Branch-and-Bound |
+| 74 | 缓存无关算法 | Cache-Oblivious/van Emde Boas/BFPRT |
 
-### 🧬 遗传算法 (genetic_algorithm)
-- `basic_genetic_algorithm.py` - 基础遗传算法
-- `greedy_genetic_algorithm.py` - 贪婪遗传算法
+### 人工智能与机器学习
 
-### 🧠 神经网络 (neural_network)
-- `perceptron.py` - 感知机
-- `曲 neural_network/` 目录
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 09 | 机器学习 | 监督/无监督/EM/GMM/HMM/CRF/聚类 |
+| 38 | 图神经网络 | GCN/GAT/GraphSAGE/GIN/知识图谱嵌入 |
+| 47 | 对抗机器学习 | FGSM/PGD/C&W攻击/随机平滑/对抗训练 |
+| 52 | 强化学习 | DQN/PPO/A3C/MCTS/模型预测控制 |
+| 56 | 模型压缩完整版 | 量化/剪枝/蒸馏/NAS/轻量化网络 |
+| 62 | 时间序列分析 | ARIMA/GARCH/DTW/变点检测/卡尔曼 |
+| 78 | 联邦学习 | FedAvg/FedProx/差分隐私/MPC聚合 |
+| 25 | 深度学习核心算法 | 反向传播/优化器/BatchNorm/Attention |
+| 37 | 因果推断算法 | PC/FCI/GES/do-calculus/因果森林 |
+| 67 | 知识图谱深度 | TransE/RotatE/CompGCN/KBQA/实体对齐 |
 
-### 📐 数学运算 (maths)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| 质数判定 | `prime_check.py` | 素数检测 |
-| 最大公约数 | `gcd.py` | 欧几里得算法 |
-| 阶乘 | `factorial.py` | 阶乘计算 |
-| 排列组合 | `binomial_coefficient.py` | 二项式系数 |
-| 矩阵乘法 | `matrix_multiplication.py` | 矩阵运算 |
-| 复利/数列 | `...` | 详见 maths/ 目录 |
+### 安全与隐私
 
-### 🧮 计算几何 (geometry)
-- `line_segment_intersection.py` - 线段相交
-- `lattice_points.py` - 格点问题
-- `等` 详见 geometry/ 目录
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 30 | 压缩感知 | RIP/CoSaMP/IHT/AMP/TV最小化 |
+| 32 | 可信执行环境 | SGX/TrustZone/远程认证/TEE |
+| 34 | 可验证计算 | SNARK/STARK/PCP/VRF/TEE证明 |
+| 35 | 同态加密 | Paillier/BFV/CKKS/FHEW/TFHE |
+| 36 | 后量子密码学 | LWE/Ring-LWE/Kyber/McEliece/SPHINCS+ |
+| 44 | 安全多方计算 | GMW/混淆电路/秘密共享/OT |
+| 46 | 密码学协议 | DH/SRP/Pedersen/零知识证明/PIR |
+| 48 | 局部可解码码 | Reed-Muller/BCH LDC/Goldreich-Levin |
+| 49 | 差分隐私 | Laplace/Gaussian机制/隐私预算/PATE |
+| 90 | 隐私计算 | zk-SNARK/Groth16/PLONK/差分隐私/联邦学习 |
 
-### 🌐 网络流 (networking_flow)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| 最大流 | `maximal_networkflow.py` | Ford-Fulkerson |
-| 最小割 | `min_cut.py` | 最小切割 |
-| 二分图匹配 | `bipartite_matching.py` | 二分图最大匹配 |
+### 系统与底层
 
-### 📦 其他分类
-| 目录 | 内容 |
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 16 | GPU并行算法 | CUDA/并行归约/前缀和/矩阵乘法/排序 |
+| 17 | 计算机体系结构 | 分支预测/Tomasulo/MESI/TLB/原子操作 |
+| 51 | 并行算法 | Fork-Join/并行归约/scan/Bitonic Sort |
+| 53 | 形式验证 | BDD/OBDD/CTL/LTL模型检查/抽象解释 |
+| 57 | 操作系统内核 | CFS/Buddy-Slab/COW/VFS/ext4/RCU/OOM |
+| 58 | 数据库内核 | 查询优化/Join算法/MVCC/ARIES/列式存储 |
+| 76 | 编译器优化 | 活跃分析/寄存器分配/窥孔优化/循环变换 |
+| 77 | 编译器内核 | Lexer/Parser/SSA/数据流/Pass架构 |
+| 81 | 计算机体系结构 | （基础方向） |
+| 83 | 计算机网络算法 | TCP-CUBIC/BBR/QUIC/HTTP2/SDN/DCTCP |
+
+### 图形与信号
+
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 18 | 信号与图像 | 小波/卡尔曼/FFT/形态学/SIFT/视频压缩 |
+| 82 | 计算机图形学 | 光线追踪/BVH/细分曲面/PBR/Deferred Shading |
+| 65 | 物理仿真 | 刚体/流体SPH/四元数/积分器/碰撞检测 |
+
+### 应用领域
+
+| 编号 | 目录 | 说明 |
+|:---:|------|------|
+| 21 | 量子计算 | Shor/Grover/QFT/量子纠错/量子游走 |
+| 23 | 区块链算法 | PoW/PoS/Merkle/闪电网络/跨链 |
+| 26 | 网页与编程 | 正则/URL解析/JSON处理/ORM |
+| 33 | 可视化 | 图形化算法演示 |
+| 39 | 在线算法 | Skiplist/LFU/K-Server/FTL/流式统计 |
+| 41 | 多智能体系统 | QMIX/COMA/共识/编队/联邦多智能体 |
+| 42 | 多目标优化 | NSGA-II/III/MOEA/D/SPEA2/Hypervolume |
+| 43 | 多臂老虎机 | UCB/Thompson/EXP3/LinUCB/PAC |
+| 50 | 差异理论 | Myers diff/LCS/补丁生成/三路合并 |
+| 55 | 推荐系统 | 协同过滤/SVD/DeepFM/序列推荐/ bandits |
+| 59 | 数据挖掘 | K-means/FP-Growth/PageRank/LDA |
+| 60 | 数据流算法 | Flajolet-Martin/Count-Min/HyperLogLog |
+| 63 | 生物信息学 | 序列比对/分子对接/蛋白质折叠/系统生物学 |
+| 66 | 知识图谱深度 | TransE/RotatE/TuckER/KBQA/实体对齐 |
+| 79 | 自然语言处理 | 分词/HMM/CRF/TF-IDF/依存句法 |
+| 85 | 运筹学 | 单纯形/整数规划/Benders/列生成/VRP |
+| 88 | 金融算法 | Black-Scholes/Greeks/Monte Carlo/VaR/GARCH |
+| 89 | 随机算法 | 随机化算法/概率分析/概率数据结构 |
+| 87 | 量子机器学习 | HHL/qSVM/QAOA/VQE/量子PCA |
+| 13 | 数学基础 | 数论/概率统计/线性代数/组合数学 |
+| 54 | 性质测试 | 图性质测试/数组性质测试/亚线性检测 |
+| 61 | 数据流算法 | 数据流统计/滑动窗口/指数直方图 |
+
+---
+
+## 文件规范
+
+所有算法文件均遵循以下规范：
+
+- ✅ **顶部中文docstring**：说明算法功能与核心思想
+- ✅ **逐行中文注释**：关键代码行有中文解释
+- ✅ **英文变量名**：避免中文变量名
+- ✅ **`if __name__ == "__main__":`**：附有可运行的测试代码
+- ✅ **真实可运行**：无伪代码，每文件50-150行
+
+---
+
+## 规模统计
+
+| 指标 | 数值 |
 |------|------|
-| `backtracking/` | 回溯算法（八皇后、数独等）|
-| `bit_manipulation/` | 位运算技巧 |
-| `blockchain/` | 区块链相关 |
-| `boolean_algebra/` | 布尔代数 |
-| `cellular_automata/` | 元胞自动机 |
-| `conversions/` | 进制转换 |
-| `data_compression/` | 数据压缩 |
-| `compiler_optimization/` | 编译器优化算法 |
-| `software_engineering/` | 软件工程算法 |
-| `divide_and_conquer/` | 分治法 |
-| `electronics/` | 电子学算法 |
-| `financial/` | 金融算法 |
-| `fractals/` | 分形 |
-| `fuzzy_logic/` | 模糊逻辑 |
-| `greedy_methods/` | 贪心算法 |
-| `hashes/` | 哈希算法 |
-| `knapsack/` | 背包问题 |
-| `machine_learning/` | 机器学习算法 |
-| `physics/` | 物理模拟 |
-| `project_euler/` | Project Euler 数学题 |
-| `quantum/` | 量子计算 |
-| `scheduling/` | 调度算法 |
-| `strings/` | 字符串算法 |
-
-### 🔧 编译器优化算法 (compiler_optimization/)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| 图着色寄存器分配 | `register_allocation.py` | Chaitin-Briggs，O(V*E) |
-| 指令调度 | `instruction_scheduling.py` | List Scheduling，O(V*E) |
-| 循环展开 | `loop_unrolling.py` | 减少循环开销，O(n) |
-| 复制传播 | `copy_propagation.py` | 变量等价替换，O(N*L) |
-| 常量折叠 | `constant_folding.py` | 编译时求值，O(N) |
-| 死代码消除 | `dead_code_elimination.py` | 删除无用代码，O(N+E) |
-| 公共子表达式消除 | `common_subexpression.py` | CSE，O(N*H) |
-| 强度削减 | `strength_reduction.py` | 高代价→低代价操作，O(N*L) |
-
-### 🛠 软件工程算法 (software_engineering/)
-| 算法 | 文件 | 说明 |
-|------|------|------|
-| Myers Diff | `diff_algorithm.py` | 最优 diff，O((N+M)D) |
-| 三路合并 | `three_way_merge.py` | 基于共同祖先合并，O(N) |
-| 编辑距离 | `levenshtein_distance.py` | 字符串转换代价，O(N*M) |
-| Rabin-Karp | `rabin_karp_rolling.py` | 滚动哈希匹配，O(N+M) |
-| 最长公共子序列 | `longest_common_subsequence.py` | LCS，O(N*M) |
-| 代码语义搜索 | `semantic_search.py` | Embedding 向量搜索，O(N*D) |
-| 代码克隆检测 | `code_clone_detection.py` | Token/树编辑距离，O(N²*L) |
-| AST 相似度比较 | `ast_similarity.py` | 树编辑距离，O(N*M) |
+| 总目录数 | ~92 |
+| 总文件数 | ~2800+ |
+| 覆盖率 | 80+算法方向 |
 
 ---
 
-## 🚀 快速开始
+## 贡献指南
 
-### 1. 浏览代码
-直接点击上方的文件目录浏览，或克隆到本地：
+### 文件命名
+- 通用算法：`algorithm_name.py`（英文小写+下划线）
+- 变体算法：`algorithm_name_variant.py`
+- 题目类：`descriptive_name.py`
 
-```bash
-git clone https://github.com/sun-hainan/Python.git
-cd Python
-```
+### 代码规范
+- 模块级docstring：中文，简洁说明算法
+- 关键行注释：中文，解释"为什么"而非"是什么"
+- 变量名：英文，无需拼音
+- 测试：`if __name__ == "__main__":` 块，展示算法效果
 
-### 2. 运行示例
-```bash
-# 运行某个算法
-python sorts/bubble_sort.py
-
-# 运行测试
-python -m pytest sorts/tests/
-```
-
-### 3. 学习路径建议
-
-```
-初学者路线：
-1. 排序算法 (sorts/) → 理解最基础算法思维
-2. 搜索算法 (searches/) → 二分搜索必须掌握
-3. 数据结构 (data_structures/) → 计算机基础
-4. 动态规划 (dynamic_programming/) → 算法难点
-5. 图算法 (graphs/) → 进阶必备
-```
-
----
-
-## 📖 学习资源
-
-| 资源 | 链接 |
-|------|------|
-| 原仓库 | https://github.com/TheAlgorithms/Python |
-| 算法可视化 | https://visualgo.net/ |
-| 简体中文教程 | https://github.com/sun-hainan/developer-roadmap-zh-CN |
-
----
-
-## 🤝 贡献指南
-
-本仓库接受 Pull Request。如需贡献：
-1. 阅读 `CONTRIBUTING.md` 了解规范
-2. 遵守代码风格（使用 ruff/black）
-3. 添加测试用例
-4. **建议为新算法添加中文注释**
-
----
-
-## 📄 License
-
-本仓库继承自 [TheAlgorithms/Python](https://github.com/TheAlgorithms/Python)，采用 MIT License。
-
----
-
-<div align="center">
-  <p>⭐ 如果对你有帮助，欢迎 Star！</p>
-  <p>Made with ❤️ by <a href="https://github.com/sun-hainan">sun-hainan</a> | Based on <a href="https://github.com/TheAlgorithms">TheAlgorithms</a></p>
-</div>
+### 目录归属
+- 不确定归属 → 发散到最相关的已有目录
+- 跨领域算法 → 归属核心算法方向
+- 新方向 → 新建目录（中文命名）
