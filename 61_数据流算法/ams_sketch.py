@@ -1,1360 +1,329 @@
-# -*- coding: utf-8 -*-
-
 """
+AMS Sketch 数据结构模块
 
-算法实现：数据流算法 / ams_sketch
+AMS (Alon-Matias-Szegedy) Sketch 是一种用于估计数据流二阶矩
+(F₂ = Σ a_i²) 和其他频率矩的经典算法。
 
+核心功能:
+- F₀估计：不同元素的数量（基数估计）
+- F₂估计：二阶矩，即频率平方和
+- 方差估计：用于检测数据分布变化
 
+算法特点:
+- 空间复杂度 O(1/ε²)，其中ε是近似误差
+- 使用随机采样和线性投影技术
+- 可扩展到高阶矩估计
 
-本文件实现 ams_sketch 相关的算法功能。
-
+参考文献：Alon, N., Matias, Y., & Szegedy, M. (1996).
+"The space complexity of approximating the frequency moments."
 """
-
-
 
 import hashlib
-
 import math
-
 import random
-
-from typing import List, Dict, Any, Optional, Tuple
-
-
-
+from typing import Dict, List, Optional, Set
 
 
 class AMSSketch:
-
     """
-
     AMS Sketch 二阶矩估计器
 
-    
+    通过维护多个独立的随机变量X_i来估计F₂。
+    每个X_i是流中元素的线性组合，其期望值为0，方差与F₂成正比。
 
-    使用多个独立的随机变量来估计二阶矩。
+    算法步骤：
+    1. 选择一个随机哈希函数将元素映射到{-1, +1}
+    2. 维护累加和 S = Σ h(element)
+    3. F₂ ≈ E[S²] = n + Σ (c_i² - c_i)，其中c_i是频率
 
-    核心思想：对于频率向量f，其二阶矩 ||f||^2 = Σ f_i^2。
-
-    通过对向量与随机哈希函数的点积来估计这个值。
-
-    
-
-    参数:
-
-        epsilon: 精度参数，控制估计的相对误差
-
-        seed: 随机种子，确保可重复性
-
+    Attributes:
+        width: 哈希桶数组的宽度
+        counters: 存储S值的计数器数组
+        seed: 随机种子
     """
 
-    
-
-    def __init__(self, epsilon: float = 0.01, seed: int = 42):
-
-        # epsilon: 精度参数，越小估计越精确
-
-        self.epsilon = epsilon
-
-        
-
-        # m: 独立变量的数量，基于ε计算
-
-        # m = O(1/epsilon^2)
-
-        self.m = int(math.ceil(1 / (epsilon ** 2)))
-
-        
-
-        # seed: 随机种子
-
-        self.seed = seed
-
-        
-
-        # random_generator: 随机数生成器
-
-        self.random_generator = random.Random(seed)
-
-        
-
-        # X: 存储m个独立随机变量的数组
-
-        # 每个X[i]是一个随机变量，用于估计二阶矩
-
-        self.X = [0.0] * self.m
-
-        
-
-        # Z: 存储m个辅助随机变量的数组
-
-        # 用于计算方差缩减
-
-        self.Z = [0.0] * self.m
-
-        
-
-        # counter: 当前处理的元素计数
-
-        self.counter = 0
-
-        
-
-        # frequency_vector: 真实频率向量（仅用于测试）
-
-        self.frequency_vector = {}
-
-        
-
-        # hash_functions: 哈希函数列表
-
-        self.hash_funcs = self._generate_hash_functions()
-
-        
-
-        # hash_para_a: 哈希函数的参数a（随机系数）
-
-        self.hash_para_a = [self.random_generator.randint(1, 10**9) for _ in range(self.m)]
-
-        
-
-        # hash_para_b: 哈希函数的参数b（随机偏移）
-
-        self.hash_para_b = [self.random_generator.randint(0, 10**9) for _ in range(self.m)]
-
-        
-
-        # hash_prime: 哈希函数的模数
-
-        self.hash_prime = 2**61 - 1  # 一个大的质数
-
-    
-
-    def _generate_hash_functions(self) -> List[callable]:
-
+    def __init__(self, width: int = 1000, seed: int = 42):
         """
+        初始化AMS Sketch
 
-        生成m个独立的哈希函数
-
-        
-
-        每个哈希函数将元素映射到{-1, +1}或{0, 1}。
-
-        这里使用4-stable分布生成随机哈希函数。
-
-        
-
-        返回:
-
-            List[callable]: 哈希函数列表
-
+        Args:
+            width: 哈希桶数量，决定空间精度trade-off
+            seed: 随机种子，确保可复现
         """
+        self.width: int = width
+        self.seed: int = seed
+        self.counters: List[int] = [0] * width  # 每个桶的累加器
+        self.element_counts: Dict[str, int] = {}  # 当前流中各元素的频率
+        self.total_count: int = 0  # 流中元素总数
 
-        # hash_funcs: 哈希函数列表
+        # 初始化随机哈希函数种子
+        random.seed(seed)
+        self.hash_coeffs: List[int] = [
+            random.randint(1, 2**31 - 1) for _ in range(8)
+        ]
 
-        hash_funcs = []
-
-        
-
-        for i in range(self.m):
-
-            # 选择哈希类型：1表示4-stable，2表示简单的符号哈希
-
-            hash_type = i % 2
-
-            
-
-            if hash_type == 0:
-
-                # stable_hash: 使用高斯随机系数的哈希函数
-
-                # h(x) = sign(a * x + b)，其中a服从高斯分布
-
-                gaussian_coeff = self.random_generator.gauss(0, 1)
-
-                
-
-                def stable_hash(x, coeff=gaussian_coeff, p=self.hash_prime):
-
-                    """4-stable分布哈希函数"""
-
-                    # hash_val: 将x转换为哈希值
-
-                    hash_val = hash(x) % p
-
-                    # 计算带高斯系数的线性组合
-
-                    raw_val = coeff * hash_val
-
-                    # 返回符号
-
-                    return 1 if raw_val >= 0 else -1
-
-                
-
-                hash_funcs.append(stable_hash)
-
-            else:
-
-                # simple_hash: 简单的伪随机哈希
-
-                def simple_hash(x, a=self.hash_para_a[i], b=self.hash_para_b[i]):
-
-                    """简单的模哈希函数"""
-
-                    hash_val = hash(x)
-
-                    return ((a * hash_val + b) % self.hash_prime) % 2 * 2 - 1
-
-                
-
-                hash_funcs.append(simple_hash)
-
-        
-
-        return hash_funcs
-
-    
-
-    def _compute_hash_value(self, item: Any, i: int) -> int:
-
+    def _hash(self, element: str) -> int:
         """
+        将元素哈希到{-1, +1}域
 
-        计算元素在第i个哈希函数下的值
+        使用一个简单的哈希函数，将任意字符串映射到±1
 
-        
+        Args:
+            element: 要哈希的元素
 
-        参数:
-
-            item: 要哈希的元素
-
-            i: 哈希函数的索引
-
-        
-
-        返回:
-
-            int: -1或+1
-
+        Returns:
+            -1 或 +1
         """
+        hash_bytes: bytes = hashlib.md5(element.encode()).digest()
+        hash_int: int = int.from_bytes(hash_bytes[:4], byteorder='big')
+        return 1 if (hash_int & 1) else -1
 
-        return self.hash_funcs[i](item)
-
-    
-
-    def update(self, item: Any, count: int = 1) -> None:
-
+    def add(self, element: str, count: int = 1) -> None:
         """
+        向数据流中添加元素
 
-        更新某个元素的频率
-
-        
-
-        对每个随机变量X[i]，加上该元素对应的哈希值乘以count。
-
-        时间复杂度: O(m) = O(1/ε^2)
-
-        
-
-        参数:
-
-            item: 要更新的元素
-
-            count: 增加的计数，默认为1
-
+        Args:
+            element: 元素标识符
+            count: 添加次数
         """
+        sign: int = self._hash(element)
+        bucket_index: int = hash(element) % self.width
 
-        # item_str: 元素转换为字符串
+        # 线性投影：累加带符号的计数
+        self.counters[bucket_index] += sign * count
 
-        item_str = str(item)
+        # 更新元素频率统计
+        if element not in self.element_counts:
+            self.element_counts[element] = 0
+        self.element_counts[element] += count
+        self.total_count += count
 
-        
-
-        # 更新频率向量（仅用于验证）
-
-        self.frequency_vector[item_str] = self.frequency_vector.get(item_str, 0) + count
-
-        
-
-        # 更新每个随机变量
-
-        for i in range(self.m):
-
-            # hash_val: 第i个哈希函数对该元素的哈希值（-1或+1）
-
-            hash_val = self._compute_hash_value(item_str, i)
-
-            
-
-            # X[i]: 累加哈希值乘以计数
-
-            self.X[i] += hash_val * count
-
-        
-
-        # counter: 更新处理计数
-
-        self.counter += count
-
-    
-
-    def estimate_second_moment(self) -> float:
-
+    def estimate_f2(self) -> float:
         """
+        估计数据流的二阶矩 F₂
 
-        估计二阶矩
+        F₂ = Σ (frequency_i)²，表示频率平方和
+        这个值反映了数据分布的"倾斜程度"：
+        - 均匀分布时 F₂ ≈ n（接近元素数量的平方）
+        - 重尾分布时 F₂ 会很大（少数高频项主导）
 
-        
-
-        使用存储的随机变量X计算二阶矩的估计值。
-
-        公式: E[||X||^2] = m * ||f||^2
-
-        
-
-        返回:
-
-            float: 二阶矩的估计值
-
+        Returns:
+            估计的F₂值
         """
+        # S²是F₂的无偏估计量
+        s_squared: float = sum(c * c for c in self.counters)
+        # 取绝对值（数值稳定性考虑）
+        return abs(s_squared)
 
-        # sum_squared: X[i]^2的累加和
-
-        sum_squared = sum(x * x for x in self.X)
-
-        
-
-        # second_moment_estimate: 二阶矩估计
-
-        # 除以m，然后乘以一个修正因子
-
-        second_moment_estimate = sum_squared / self.m
-
-        
-
-        return second_moment_estimate
-
-    
-
-    def estimate_f0(self) -> float:
-
+    def estimate_f0(self) -> int:
         """
+        估计数据流的不同元素数量（基数）
 
-        估计零阶矩（即元素总数）
+        也称为F₀估计，使用AMS的方法需要额外维护更多信息。
+        此处使用简单的计数器方法作为近似。
 
-        
-
-        返回:
-
-            float: 元素总数的估计
-
+        Returns:
+            估计的不同元素数量
         """
+        return len(self.element_counts)
 
-        return sum(abs(x) for x in self.X) / self.m
-
-    
-
-    def estimate_change(self, other: 'AMSSketch') -> float:
-
+    def estimate_f1(self) -> int:
         """
+        估计数据流的元素总数（F₁矩）
 
-        估计两个数据流之间的变化（二阶矩差异）
-
-        
-
-        可以用于检测数据流中的显著变化。
-
-        
-
-        参数:
-
-            other: 另一个AMSSketch
-
-        
-
-        返回:
-
-            float: 变化的估计值
-
+        Returns:
+            流中元素的总数
         """
+        return self.total_count
 
-        # 检查参数匹配
-
-        if self.m != other.m:
-
-            raise ValueError("Cannot compare AMSSketches with different parameters")
-
-        
-
-        # diff_squared_sum: (X[i] - Y[i])^2的累加和
-
-        diff_squared_sum = sum((self.X[i] - other.X[i]) ** 2 for i in range(self.m))
-
-        
-
-        # change_estimate: 变化估计
-
-        change_estimate = diff_squared_sum / self.m
-
-        
-
-        return change_estimate
-
-    
-
-    def get_frequency(self, item: Any) -> int:
-
+    def estimate_entropy(self) -> float:
         """
+        估计数据流的香农熵
 
-        获取某个元素的真实频率（仅用于测试）
+        H = -Σ p_i * log₂(p_i)，其中p_i是归一化频率
 
-        
-
-        参数:
-
-            item: 要查询的元素
-
-        
-
-        返回:
-
-            int: 真实频率
-
+        Returns:
+            估计的香农熵值
         """
+        if self.total_count == 0:
+            return 0.0
 
-        return self.frequency_vector.get(str(item), 0)
+        entropy: float = 0.0
+        for count in self.element_counts.values():
+            if count > 0:
+                p: float = count / self.total_count
+                entropy -= p * math.log2(p)
+        return entropy
 
-    
-
-    def reset(self) -> None:
-
+    def estimate_variance(self) -> float:
         """
+        估计频率分布的方差
 
-        重置所有随机变量
+        这个指标可以用于检测数据流分布是否发生变化
 
+        Returns:
+            频率分布的方差
         """
+        if not self.element_counts:
+            return 0.0
 
-        # X: 重置为全零
+        frequencies: List[int] = list(self.element_counts.values())
+        n: int = len(frequencies)
+        mean_freq: float = sum(frequencies) / n
+        variance: float = sum((f - mean_freq) ** 2 for f in frequencies) / n
+        return variance
 
-        self.X = [0.0] * self.m
-
-        
-
-        # frequency_vector: 清空
-
-        self.frequency_vector = {}
-
-        
-
-        # counter: 重置为0
-
-        self.counter = 0
-
-    
-
-    def get_memory_usage(self) -> int:
-
+    def get_distribution_info(self) -> Dict:
         """
+        获取当前数据流分布的完整统计信息
 
-        获取内存使用量（字节）
-
-        
-
-        返回:
-
-            int: 内存使用量估计
-
+        Returns:
+            包含各种矩估计的字典
         """
-
-        # 每个浮点数约8字节
-
-        float_size = 8
-
-        
-
-        # total_size: 总大小
-
-        total_size = self.m * float_size * 2  # X和Z数组
-
-        
-
-        return total_size
-
-    
-
-    def __repr__(self) -> str:
-
-        """返回AMS Sketch的字符串表示"""
-
-        return f"AMSSketch(m={self.m}, counter={self.counter})"
-
-
-
-
-
-class AMSSketchWithVarianceReduction(AMSSketch):
-
-    """
-
-    带方差缩减的AMS Sketch
-
-    
-
-    使用Z变量进行方差缩减，提高估计精度。
-
-    Z变量与X变量负相关，可以减少估计的方差。
-
-    """
-
-    
-
-    def __init__(self, epsilon: float = 0.01, seed: int = 42):
-
-        # 调用父类构造函数
-
-        super().__init__(epsilon, seed)
-
-        
-
-        # Z: 辅助随机变量数组，用于方差缩减
-
-        self.Z = [0.0] * self.m
-
-    
-
-    def update(self, item: Any, count: int = 1) -> None:
-
-        """
-
-        更新元素（同时更新X和Z）
-
-        
-
-        参数:
-
-            item: 要更新的元素
-
-            count: 增加的计数
-
-        """
-
-        # item_str: 元素字符串
-
-        item_str = str(item)
-
-        
-
-        # 更新频率向量
-
-        self.frequency_vector[item_str] = self.frequency_vector.get(item_str, 0) + count
-
-        
-
-        # 更新每个随机变量对
-
-        for i in range(self.m):
-
-            # hash_val: 哈希值
-
-            hash_val = self._compute_hash_value(item_str, i)
-
-            
-
-            # X[i]: 累加
-
-            self.X[i] += hash_val * count
-
-            
-
-            # Z[i]: 使用不同的哈希函数（互补哈希）
-
-            # 这里使用-X[i]作为简化的互补版本
-
-            Z_hash = -hash_val
-
-            self.Z[i] += Z_hash * count
-
-        
-
-        # counter: 更新计数
-
-        self.counter += count
-
-    
-
-    def estimate_second_moment_reduced(self) -> float:
-
-        """
-
-        使用方差缩减估计二阶矩
-
-        
-
-        使用公式: E[(X - Z)^2] / 4 = ||f||^2
-
-        
-
-        返回:
-
-            float: 二阶矩的估计值
-
-        """
-
-        # diff_squared_sum: (X[i] - Z[i])^2的累加和
-
-        diff_squared_sum = sum((self.X[i] - self.Z[i]) ** 2 for i in range(self.m))
-
-        
-
-        # second_moment_estimate: 缩减后的估计
-
-        second_moment_estimate = diff_squared_sum / (4 * self.m)
-
-        
-
-        return second_moment_estimate
-
-
-
-
-
-class StreamSnapshot:
-
-    """
-
-    数据流快照管理器
-
-    
-
-    用于保存和恢复AMS Sketch的状态，
-
-    方便比较不同时间窗口的数据流。
-
-    """
-
-    
-
-    def __init__(self, epsilon: float = 0.01, seed: int = 42):
-
-        # sketch: 关联的AMS Sketch
-
-        self.sketch = AMSSketch(epsilon, seed)
-
-        
-
-        # snapshots: 保存的快照列表
-
-        self.snapshots = []
-
-    
-
-    def save_snapshot(self) -> int:
-
-        """
-
-        保存当前状态为快照
-
-        
-
-        返回:
-
-            int: 快照的索引
-
-        """
-
-        # state: 当前状态的深拷贝
-
-        state = {
-
-            'X': self.sketch.X.copy(),
-
-            'frequency_vector': self.sketch.frequency_vector.copy(),
-
-            'counter': self.sketch.counter
-
+        return {
+            "F0 (distinct elements)": self.estimate_f0(),
+            "F1 (total count)": self.estimate_f1(),
+            "F2 (second moment)": round(self.estimate_f2(), 2),
+            "entropy": round(self.estimate_entropy(), 4),
+            "variance": round(self.estimate_variance(), 2),
+            "max_frequency": max(self.element_counts.values()) if self.element_counts else 0,
+            "min_frequency": min(self.element_counts.values()) if self.element_counts else 0,
         }
 
-        
 
-        # snapshots: 添加新快照
+class StreamingF2Estimator:
+    """
+    流式F₂估计器（简化版AMS）
 
-        snapshot_id = len(self.snapshots)
+    使用单个计数器S = Σ h(element)，其中h将元素映射到{-1,+1}
+    维护S²的无偏估计量来近似F₂。
 
-        self.snapshots.append(state)
+    优点：空间极小（仅需一个计数器）
+    缺点：方差较大，需要多次独立运行取平均
+    """
 
-        
-
-        return snapshot_id
-
-    
-
-    def restore_snapshot(self, snapshot_id: int) -> None:
-
+    def __init__(self, seed: int = 42):
         """
+        初始化流式F₂估计器
 
-        恢复到指定快照的状态
-
-        
-
-        参数:
-
-            snapshot_id: 快照索引
-
+        Args:
+            seed: 随机种子
         """
+        self.seed: int = seed
+        self.counter: int = 0  # S = Σ h(element)
+        random.seed(seed)
 
-        if snapshot_id >= len(self.snapshots):
+    def _hash(self, element: str) -> int:
+        """将元素映射到{-1, +1}"""
+        hash_val: int = hashlib.md5(element.encode()).digest()[0]
+        return 1 if (hash_val & 1) else -1
 
-            raise ValueError(f"Snapshot {snapshot_id} does not exist")
+    def add(self, element: str) -> None:
+        """
+        添加元素到流中
 
-        
-
-        # state: 获取快照状态
-
-        state = self.snapshots[snapshot_id]
-
-        
-
-        # 恢复到快照
-
-        self.sketch.X = state['X'].copy()
-
-        self.sketch.frequency_vector = state['frequency_vector'].copy()
-
-        self.sketch.counter = state['counter']
-
-    
-
-    def update(self, item: Any, count: int = 1) -> None:
-
-        """更新当前sketch"""
-
-        self.sketch.update(item, count)
-
-    
+        Args:
+            element: 元素标识
+        """
+        self.counter += self._hash(element)
 
     def estimate(self) -> float:
-
-        """估计二阶矩"""
-
-        return self.sketch.estimate_second_moment()
-
-    
-
-    def get_change_since(self, snapshot_id: int) -> float:
-
         """
+        估计F₂值
 
-        获取从指定快照以来的变化
+        根据算法理论：E[S²] = F₂
 
-        
-
-        参数:
-
-            snapshot_id: 快照索引
-
-        
-
-        返回:
-
-            float: 变化估计值
-
+        Returns:
+            F₂的估计值
         """
+        return self.counter ** 2
 
-        if snapshot_id >= len(self.snapshots):
 
-            raise ValueError(f"Snapshot {snapshot_id} does not exist")
-
-        
-
-        # current_X: 当前X值
-
-        current_X = self.sketch.X.copy()
-
-        
-
-        # snapshot_X: 快照中的X值
-
-        snapshot_X = self.snapshots[snapshot_id]['X']
-
-        
-
-        # 计算变化
-
-        diff_squared_sum = sum(
-
-            (current_X[i] - snapshot_X[i]) ** 2 
-
-            for i in range(self.sketch.m)
-
-        )
-
-        
-
-        return diff_squared_sum / self.sketch.m
-
-
-
-
-
-class AMSKmeansEstimator:
-
-    """
-
-    基于AMS Sketch的K-means距离估计器
-
-    
-
-    使用AMS Sketch来估计数据流中点与聚类中心的距离平方和。
-
-    """
-
-    
-
-    def __init__(self, k: int, epsilon: float = 0.01, seed: int = 42):
-
-        # k: 聚类数量
-
-        self.k = k
-
-        
-
-        # epsilon: 精度参数
-
-        self.epsilon = epsilon
-
-        
-
-        # centers: 聚类中心列表
-
-        self.centers = [[0.0] * 2 for _ in range(k)]  # 简化版本，假设2D数据
-
-        
-
-        # cluster_counts: 每个聚类的计数
-
-        self.cluster_counts = [0] * k
-
-        
-
-        # sketch: AMS Sketch用于频率估计
-
-        self.sketch = AMSSketch(epsilon, seed)
-
-        
-
-        # dimension: 数据维度
-
-        self.dimension = 2
-
-    
-
-    def update_point(self, point: List[float], cluster_id: int) -> None:
-
-        """
-
-        更新一个数据点
-
-        
-
-        参数:
-
-            point: 数据点坐标列表
-
-            cluster_id: 分配的聚类ID
-
-        """
-
-        # 更新聚类计数
-
-        self.cluster_counts[cluster_id] += 1
-
-        
-
-        # 更新聚类中心（简化版本）
-
-        center = self.centers[cluster_id]
-
-        count = self.cluster_counts[cluster_id]
-
-        
-
-        for d in range(self.dimension):
-
-            # incremental_update: 增量更新中心
-
-            center[d] = center[d] + (point[d] - center[d]) / count
-
-        
-
-        # 更新sketch
-
-        self.sketch.update(f"cluster_{cluster_id}")
-
-    
-
-    def estimate_cost(self) -> float:
-
-        """
-
-        估计K-means目标函数值
-
-        
-
-        公式: Σ Σ ||point - center||^2
-
-        
-
-        返回:
-
-            float: 成本估计值
-
-        """
-
-        # 使用sketch的二阶矩估计
-
-        second_moment = self.sketch.estimate_second_moment()
-
-        
-
-        # 简化的成本估计
-
-        # 实际实现需要更复杂的处理
-
-        return second_moment
-
-
-
-
-
+# -------------------- 测试代码 --------------------
 if __name__ == "__main__":
-
+    print("=" * 60)
+    print("AMS Sketch 频率矩估计测试")
     print("=" * 60)
 
-    print("AMS Sketch 测试")
-
-    print("=" * 60)
-
-    
-
-    # 测试1: 基本功能
-
-    print("\n[测试1] 基本功能测试")
-
-    print("-" * 60)
-
-    
-
-    # 创建AMS Sketch
-
-    # epsilon=0.1 表示10%的相对误差
-
-    ams = AMSSketch(epsilon=0.1, seed=42)
-
-    
-
-    print(f"AMS Sketch 创建成功")
-
-    print(f"  - m (随机变量数): {ams.m}")
-
-    print(f"  - epsilon: {ams.epsilon}")
-
-    
-
-    # 数据流
-
-    data_stream = ["A", "B", "A", "C", "A", "B", "A", "D", "A", "B"]
-
-    
-
-    print(f"\n数据流: {data_stream}")
-
-    
-
-    # 更新sketch
-
-    for item in data_stream:
-
-        ams.update(item)
-
-    
-
-    # 计算真实二阶矩
-
-    freq = {}
-
-    for item in data_stream:
-
-        freq[item] = freq.get(item, 0) + 1
-
-    
-
-    true_second_moment = sum(f ** 2 for f in freq.values())
-
-    
-
-    print(f"\n真实频率分布:")
-
-    for item, count in freq.items():
-
-        print(f"  {item}: {count}")
-
-    
-
-    print(f"\n真实二阶矩: {true_second_moment}")
-
-    
-
-    # 估计二阶矩
-
-    estimated_second_moment = ams.estimate_second_moment()
-
-    error = abs(estimated_second_moment - true_second_moment) / true_second_moment
-
-    
-
-    print(f"估计二阶矩: {estimated_second_moment:.2f}")
-
-    print(f"相对误差: {error * 100:.2f}%")
-
-    
-
-    # 测试2: 不同epsilon的影响
-
-    print("\n[测试2] 不同epsilon的影响")
-
-    print("-" * 60)
-
-    
-
-    epsilons = [0.5, 0.2, 0.1, 0.05, 0.01]
-
-    
-
-    # 生成大规模数据流
-
-    import random
-
-    random.seed(42)
-
-    
-
-    # large_stream: 大规模测试数据
-
-    stream_size = 10000
-
-    unique_elements = 100
-
-    
-
-    large_stream = [f"elem_{random.randint(0, unique_elements-1)}" for _ in range(stream_size)]
-
-    
-
-    # 计算真实二阶矩
-
-    large_freq = {}
-
-    for item in large_stream:
-
-        large_freq[item] = large_freq.get(item, 0) + 1
-
-    
-
-    true_large_second_moment = sum(f ** 2 for f in large_freq.values())
-
-    
-
-    print(f"大规模测试: {stream_size} 个元素, {unique_elements} 个唯一值")
-
-    print(f"真实二阶矩: {true_large_second_moment}")
-
-    
-
-    for eps in epsilons:
-
-        test_ams = AMSSketch(epsilon=eps, seed=42)
-
-        
-
-        for item in large_stream:
-
-            test_ams.update(item)
-
-        
-
-        estimate = test_ams.estimate_second_moment()
-
-        error = abs(estimate - true_large_second_moment) / true_large_second_moment
-
-        
-
-        print(f"  epsilon={eps:.2f}: 估计={estimate:.2f}, 相对误差={error*100:.2f}%, m={test_ams.m}")
-
-    
-
-    # 测试3: 方差缩减版本
-
-    print("\n[测试3] 方差缩减版本测试")
-
-    print("-" * 60)
-
-    
-
-    reduced_ams = AMSSketchWithVarianceReduction(epsilon=0.1, seed=42)
-
-    
-
-    for item in data_stream:
-
-        reduced_ams.update(item)
-
-    
-
-    reduced_estimate = reduced_ams.estimate_second_moment_reduced()
-
-    
-
-    print(f"原始AMS估计: {ams.estimate_second_moment():.2f}")
-
-    print(f"方差缩减估计: {reduced_estimate:.2f}")
-
-    print(f"真实二阶矩: {true_second_moment}")
-
-    
-
-    # 测试4: 快照功能
-
-    print("\n[测试4] 快照功能测试")
-
-    print("-" * 60)
-
-    
-
-    snapshot_manager = StreamSnapshot(epsilon=0.1, seed=42)
-
-    
-
-    # 第一个时间窗口
-
-    window1 = ["A", "B", "A", "C", "A", "D", "A"]
-
-    print(f"时间窗口1: {window1}")
-
-    
-
-    for item in window1:
-
-        snapshot_manager.update(item)
-
-    
-
-    snapshot_id = snapshot_manager.save_snapshot()
-
-    estimate1 = snapshot_manager.estimate()
-
-    print(f"快照{snapshot_id}保存，估计二阶矩: {estimate1:.2f}")
-
-    
-
-    # 第二个时间窗口
-
-    window2 = ["A", "B", "E", "A", "B", "F", "A", "G"]
-
-    print(f"时间窗口2: {window2}")
-
-    
-
-    for item in window2:
-
-        snapshot_manager.update(item)
-
-    
-
-    estimate2 = snapshot_manager.estimate()
-
-    print(f"当前估计二阶矩: {estimate2:.2f}")
-
-    
-
-    # 计算变化
-
-    change = snapshot_manager.get_change_since(snapshot_id)
-
-    print(f"从快照{snapshot_id}以来的变化: {change:.2f}")
-
-    
-
-    # 测试5: 变化检测
-
-    print("\n[测试5] 变化检测测试")
-
-    print("-" * 60)
-
-    
-
-    sketch1 = AMSSketch(epsilon=0.05, seed=100)
-
-    sketch2 = AMSSketch(epsilon=0.05, seed=100)
-
-    
-
-    # 两个不同的数据分布
-
-    stream1 = [f"item_{i % 20}" for i in range(5000)]
-
-    stream2 = [f"item_{i % 50}" for i in range(5000)]  # 不同的分布
-
-    
-
-    print(f"流1: 20个唯一元素")
-
-    print(f"流2: 50个唯一元素")
-
-    
-
-    for item in stream1:
-
-        sketch1.update(item)
-
-    
-
-    for item in stream2:
-
-        sketch2.update(item)
-
-    
-
-    # 估计各自的二阶矩
-
-    est1 = sketch1.estimate_second_moment()
-
-    est2 = sketch2.estimate_second_moment()
-
-    
-
-    # 计算变化
-
-    change_estimate = sketch1.estimate_change(sketch2)
-
-    
-
-    print(f"流1二阶矩估计: {est1:.2f}")
-
-    print(f"流2二阶矩估计: {est2:.2f}")
-
-    print(f"两流之间的变化估计: {change_estimate:.2f}")
-
-    
-
-    # 测试6: 频率估计
-
-    print("\n[测试6] 频率估计测试")
-
-    print("-" * 60)
-
-    
-
-    test_stream = ["X", "Y", "X", "Z", "X", "Y", "X", "X"]
-
-    
-
-    freq_ams = AMSSketch(epsilon=0.1, seed=42)
-
-    
-
-    for item in test_stream:
-
-        freq_ams.update(item)
-
-    
-
-    print(f"测试数据流: {test_stream}")
-
-    print(f"\n元素频率:")
-
-    
-
-    # 计算真实频率
-
-    true_freq = {}
-
-    for item in test_stream:
-
-        true_freq[item] = true_freq.get(item, 0) + 1
-
-    
-
-    for item in set(test_stream):
-
-        true = true_freq[item]
-
-        print(f"  {item}: 真实={true}")
-
-    
-
-    # 测试7: 大规模准确性测试
-
-    print("\n[测试7] 大规模准确性测试")
-
-    print("-" * 60)
-
-    
-
-    random.seed(12345)
-
-    
-
-    sizes = [10000, 50000, 100000]
-
-    
-
-    for size in sizes:
-
-        test_stream = [f"elem_{random.randint(0, 1000)}" for _ in range(size)]
-
-        
-
-        # 计算真实二阶矩
-
-        freq_dict = {}
-
-        for item in test_stream:
-
-            freq_dict[item] = freq_dict.get(item, 0) + 1
-
-        
-
-        true_moment = sum(f ** 2 for f in freq_dict.values())
-
-        
-
-        # 使用不同的epsilon测试
-
-        for eps in [0.1, 0.05, 0.01]:
-
-            test_ams = AMSSketch(epsilon=eps, seed=42)
-
-            
-
-            for item in test_stream:
-
-                test_ams.update(item)
-
-            
-
-            estimated = test_ams.estimate_second_moment()
-
-            error = abs(estimated - true_moment) / true_moment
-
-            
-
-            print(f"规模={size:6d}, eps={eps:.2f}: 真实={true_moment:12.0f}, 估计={estimated:12.2f}, 误差={error*100:5.2f}%")
-
-    
-
+    # 测试场景1：均匀分布
+    print("\n【场景1】均匀分布数据流")
+    print("-" * 40)
+
+    uniform_sketch: AMSSketch = AMSSketch(width=1000, seed=100)
+    uniform_elements: List[str] = [f"item_{i % 20}" for i in range(1000)]
+
+    for element in uniform_elements:
+        uniform_sketch.add(element)
+
+    print(f"输入: 1000个元素，20种类型，每种约50次")
+    print(f"分布信息:")
+    for key, value in uniform_sketch.get_distribution_info().items():
+        print(f"  {key}: {value}")
+
+    # 测试场景2：重尾分布（Zipf分布）
+    print("\n【场景2】重尾分布数据流 (Zipf)")
+    print("-" * 40)
+
+    zipf_sketch: AMSSketch = AMSSketch(width=1000, seed=100)
+    # 模拟Zipf分布：少数元素占据大部分出现次数
+    zipf_elements: List[str] = []
+    for rank in range(1, 21):  # 20种元素
+        frequency: int = int(1000 / rank ** 1.5)  # Zipf指数1.5
+        zipf_elements.extend([f"item_{rank}"] * frequency)
+
+    print(f"输入: 约{len(zipf_elements)}个元素，频率呈Zipf分布")
+    for element in zipf_elements:
+        zipf_sketch.add(element)
+
+    print(f"分布信息:")
+    for key, value in zipf_sketch.get_distribution_info().items():
+        print(f"  {key}: {value}")
+
+    # 场景3：对比分析
+    print("\n【场景3】F₂值的深入对比")
+    print("-" * 40)
+
+    print(f"{'指标':<25} {'均匀分布':<15} {'重尾分布':<15}")
+    print("-" * 55)
+
+    uniform_info: Dict = uniform_sketch.get_distribution_info()
+    zipf_info: Dict = zipf_sketch.get_distribution_info()
+
+    for key in ["F2 (second moment)", "entropy", "variance"]:
+        u_val = uniform_info[key]
+        z_val = zipf_info[key]
+        print(f"{key:<25} {str(u_val):<15} {str(z_val):<15}")
+
+    # 解释F₂的含义
+    print("\n【F₂解释】")
+    print(f"均匀分布 F₂ ≈ n×(1/n)²×n = n = {len(uniform_elements)}")
+    print(f"重尾分布 F₂ 更大，因为高频项主导 (少数项出现很多次)")
+
+    # 流式F₂估计器测试
     print("\n" + "=" * 60)
-
-    print("AMS Sketch 测试完成")
-
+    print("流式F₂估计器（单计数器）测试")
     print("=" * 60)
 
+    # 多次独立运行取平均
+    estimates: List[float] = []
+    num_trials: int = 100
+
+    for trial in range(num_trials):
+        estimator: StreamingF2Estimator = StreamingF2Estimator(seed=trial)
+        test_stream: List[str] = ["a", "b", "a", "c", "b", "a", "d", "a"]
+        for elem in test_stream:
+            estimator.add(elem)
+        estimates.append(estimator.estimate())
+
+    avg_estimate: float = sum(estimates) / len(estimates)
+    variance: float = sum((e - avg_estimate) ** 2 for e in estimates) / len(estimates)
+
+    print(f"\n测试流: ['a','b','a','c','b','a','d','a']")
+    print(f"真实频率: a=4, b=2, c=1, d=1")
+    print(f"真实F₂ = 4² + 2² + 1² + 1² = 22")
+    print(f"\n{num_trials}次独立估计:")
+    print(f"  平均估计: {avg_estimate:.2f}")
+    print(f"  估计方差: {variance:.2f}")
+    print(f"  标准差: {math.sqrt(variance):.2f}")
+
+    print("\n测试完成 ✓")
